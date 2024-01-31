@@ -130,9 +130,6 @@ fn main() {
     //FS BTA VS Rank
     println!("Prefromane of BTA over Rank {}", bta as f64/rank  as f64);
     println!("Expected {}", 0.74/0.40);
-
-
-
     
 }
 
