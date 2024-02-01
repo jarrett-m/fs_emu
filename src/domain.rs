@@ -12,6 +12,7 @@ pub struct Domain {
     pub pointer: usize,
     pub fake_requests: u64,
     
+    pub tick_finished: u64,
 }
 
 impl Domain {
@@ -23,6 +24,7 @@ impl Domain {
             write_tracker: Vec::new(),
             pointer: 0,
             fake_requests: 0,
+            tick_finished: 0,
         }
     }
 
