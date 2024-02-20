@@ -61,19 +61,19 @@ impl Domain {
 
     pub fn send_next_request(&mut self, time: u64) {
         //if next request is before time, send it
-        if self.read_queue.last().is_some() && self.write_queue.last().is_some() {
-            if self.read_queue.last().unwrap().cylce_in < self.write_queue.last().unwrap().cylce_in {
-                if self.read_queue.last().unwrap().cylce_in <= time {
+        if self.read_queue.first().is_some() && self.write_queue.first().is_some() {
+            if self.read_queue.first().unwrap().cylce_in < self.write_queue.first().unwrap().cylce_in {
+                if self.read_queue.first().unwrap().cylce_in <= time {
                     self.read_queue.pop();
                 }
-            } else if self.write_queue.last().unwrap().cylce_in <= time {
+            } else if self.write_queue.first().unwrap().cylce_in <= time {
                 self.write_queue.pop();
             }
-        } else if self.read_queue.last().is_some() {
-            if self.read_queue.last().unwrap().cylce_in <= time {
+        } else if self.read_queue.first().is_some() {
+            if self.read_queue.first().unwrap().cylce_in <= time {
                 self.read_queue.pop();
             }
-        } else if self.write_queue.last().is_some() && self.write_queue.last().unwrap().cylce_in <= time {
+        } else if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
             self.write_queue.pop();
         }
         else {
@@ -91,12 +91,19 @@ impl Domain {
         let mut next_read_with_bank_id_index = None;
         let mut next_write_with_bank_id_index = None;
         for (index, read) in self.read_queue.iter().enumerate() {
+            if read.cylce_in > time {
+                break;
+            }
             if read.bank_id % 3 == bank_id_allowed {
                 next_read_with_bank_id_index = Some(index);
                 break;
             }
         }
+
         for (index, write) in self.write_queue.iter().enumerate() {
+            if write.cylce_in > time {
+                break;
+            }
             if write.bank_id % 3 == bank_id_allowed {
                 next_write_with_bank_id_index = Some(index);
                 break;
@@ -112,30 +119,26 @@ impl Domain {
             Some(index) => Some(self.write_queue[index].clone()),
             None => None,
         };
-
+        if !next_read_with_bank_id.is_some() && !next_write_with_bank_id.is_some(){
+            self.fake_requests += 1;
+        }
         if next_read_with_bank_id.is_some() && next_write_with_bank_id.is_some() {
             if next_read_with_bank_id.clone().unwrap().cylce_in < next_write_with_bank_id.clone().unwrap().cylce_in {
-                if next_read_with_bank_id.unwrap().cylce_in <= time {
                     self.read_queue.remove(next_read_with_bank_id_index.unwrap());
-                }
-            } else if next_write_with_bank_id.unwrap().cylce_in <= time {
+            } else {
                 self.write_queue.remove(next_write_with_bank_id_index.unwrap());
                 }
             }
         else if next_read_with_bank_id.is_some() {
-            if next_read_with_bank_id.unwrap().cylce_in <= time {
-                self.read_queue.remove(next_read_with_bank_id_index.unwrap());
-            }
+            self.read_queue.remove(next_read_with_bank_id_index.unwrap());
         } else if next_write_with_bank_id.is_some() && next_write_with_bank_id.unwrap().cylce_in <= time {
             self.write_queue.remove(next_write_with_bank_id_index.unwrap());
         }
-        else {
-            self.fake_requests += 1;
-        }
+        
     }
 
     pub fn send_next_read_request(&mut self, time: u64) {
-        if self.read_queue.last().is_some() && self.read_queue.last().unwrap().cylce_in <= time {
+        if self.read_queue.first().is_some() && self.read_queue.first().unwrap().cylce_in <= time {
             self.read_queue.pop();
         } else {
             self.fake_requests += 1;
@@ -144,7 +147,7 @@ impl Domain {
     }
 
     pub fn send_next_write_request(&mut self, time: u64) {
-        if self.write_queue.last().is_some() && self.write_queue.last().unwrap().cylce_in <= time {
+        if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
             self.write_queue.pop();
         } else {
             self.fake_requests += 1;
@@ -162,15 +165,15 @@ impl Domain {
 
     pub fn send_next_request_odds(&mut self, time: u64) {
         if self.write_tracker[self.pointer] == 'w'{ //if next is a write
-            if self.write_queue.last().is_some() && self.write_queue.last().unwrap().cylce_in <= time {
+            if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
                 self.write_queue.pop(); //send next write
             }
         } 
         //if next is a read
-        else if self.read_queue.last().is_some() && self.read_queue.last().unwrap().cylce_in <= time { //else its read, priority to read
+        else if self.read_queue.first().is_some() && self.read_queue.first().unwrap().cylce_in <= time { //else its read, priority to read
             self.read_queue.pop(); //else we can only send a read
         }
-        else if self.write_queue.last().is_some() && self.write_queue.last().unwrap().cylce_in <= time {
+        else if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
             self.write_queue.pop(); //send next write
         }
         //send nothing, pretend ;)
@@ -194,6 +197,7 @@ pub enum RequestType {
 }
 #[derive(Clone)]
 #[derive(PartialEq)]
+#[derive(Debug)]
 pub struct Request {
     pub request_type: RequestType,
     pub cylce_in: u64,

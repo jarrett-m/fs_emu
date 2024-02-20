@@ -67,7 +67,7 @@ def gen_trace_with_odds_bank(domains: int, odds_of_write, cycles: int, banks: in
         for cycle in range(cycles):
             domain = randint(0, domains-1)
             f.write(f"{domain} {'W' if randint(0,100) < odds_of_write[domain] else 'R'} {current_cycle} {randint(0,15)}\n")
-            current_cycle += randint(1, 10)
+            current_cycle += randint(100, 500)
             if current_cycle > cycles:
                 break
             
@@ -75,7 +75,8 @@ if __name__ == "__main__":
     if len(argv) == 1:
         #gen_trace(4, randint(1000000,5000000), 16,"trace.txt") #default
         #gen_trace_with_odds(2, [25, 75], randint(1100000,1500000), 16,"trace.txt")
-        gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
+        #gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
+        gen_trace_with_odds_bank(2, [25, 75], 1500000, 16,"trace.txt")
     elif len(argv) < 4:
         print("Usage: python trace_gen.py <domains> <cycles> <banks> <file_name>")
     else:
