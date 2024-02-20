@@ -82,6 +82,58 @@ impl Domain {
         //send nothing, pretend ;)
     }
 
+    pub fn send_next_request_bank(&mut self, time: u64, bank_id_allowed: u16){
+        //if next request is before time, send it
+
+        //get oldest sent request for the req.bank_id % 3 = bank_id_allowed from read
+        // remove it if time allows
+
+        let mut next_read_with_bank_id_index = None;
+        let mut next_write_with_bank_id_index = None;
+        for (index, read) in self.read_queue.iter().enumerate() {
+            if read.bank_id % 3 == bank_id_allowed {
+                next_read_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+        for (index, write) in self.write_queue.iter().enumerate() {
+            if write.bank_id % 3 == bank_id_allowed {
+                next_write_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+
+        let next_read_with_bank_id = match next_read_with_bank_id_index {
+            Some(index) => Some(self.read_queue[index].clone()),
+            None => None,
+        };
+
+        let next_write_with_bank_id= match next_write_with_bank_id_index {
+            Some(index) => Some(self.write_queue[index].clone()),
+            None => None,
+        };
+
+        if next_read_with_bank_id.is_some() && next_write_with_bank_id.is_some() {
+            if next_read_with_bank_id.clone().unwrap().cylce_in < next_write_with_bank_id.clone().unwrap().cylce_in {
+                if next_read_with_bank_id.unwrap().cylce_in <= time {
+                    self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+                }
+            } else if next_write_with_bank_id.unwrap().cylce_in <= time {
+                self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+                }
+            }
+        else if next_read_with_bank_id.is_some() {
+            if next_read_with_bank_id.unwrap().cylce_in <= time {
+                self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+            }
+        } else if next_write_with_bank_id.is_some() && next_write_with_bank_id.unwrap().cylce_in <= time {
+            self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+        }
+        else {
+            self.fake_requests += 1;
+        }
+    }
+
     pub fn send_next_read_request(&mut self, time: u64) {
         if self.read_queue.last().is_some() && self.read_queue.last().unwrap().cylce_in <= time {
             self.read_queue.pop();
@@ -135,18 +187,25 @@ impl Domain {
 
 #[derive(Debug)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum RequestType {
     WriteRequest,
     ReadRequest,
 }
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub struct Request {
     pub request_type: RequestType,
     pub cylce_in: u64,
+    pub bank_id: u16,
 }
 
 impl Request {
-    pub fn new(request_type: RequestType, cylce_in: u64) -> Request {
-        Request { request_type, cylce_in}
+    // pub fn new(request_type: RequestType, cylce_in: u64) -> Request {
+    //     Request { request_type, cylce_in}
+    // }
+
+    pub fn new(request_type: RequestType, cylce_in: u64, bank_id: u16) -> Request {
+        Request { request_type, cylce_in, bank_id}
     }
 }

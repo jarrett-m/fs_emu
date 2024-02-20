@@ -138,11 +138,15 @@ fn simulate_fs_bta(domains: &mut Vec<domain::Domain>) -> u64 {
     let mut clock = clock::Clock::new();
     let constraints = clock::Constraints::new(domains.len() as u16, 15);
     let mut current_domain: u16 = 0;
+
+    let mut current_bank_id: u16 = 0;
+
     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
         //check which request (next read or write) was sent first, and send it
-        domains[current_domain as usize].send_next_request(clock.time());
+        domains[current_domain as usize].send_next_request_bank(clock.time(), current_bank_id);
         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
         current_domain = (current_domain + 1) % constraints.num_domains;
+        current_bank_id = (current_bank_id + 1) % 3;
     }
 
     println!("{} ticks to complete", clock.time());
@@ -204,9 +208,10 @@ fn main() {
         let domain_id: u16 = line[0].parse().expect("Failed to parse domain id");
         let request_type: &str = line[1];
         let cylce_in: u64 = line[2].parse().expect("Failed to parse cycle in");
+        let bank_id: u16 = line[3].parse().expect("Failed to parse bank id");
         let request: domain::Request = match request_type {
-            "W" => domain::Request::new(domain::RequestType::WriteRequest, cylce_in),
-            "R" => domain::Request::new(domain::RequestType::ReadRequest, cylce_in),
+            "W" => domain::Request::new(domain::RequestType::WriteRequest, cylce_in, bank_id),
+            "R" => domain::Request::new(domain::RequestType::ReadRequest, cylce_in, bank_id),
             _ => panic!("Invalid request type"),
         };
         //push x domains into the vector until the domain id is reached
@@ -244,7 +249,10 @@ fn main() {
     //simulate_baseline(&mut domains);
     domains[0].set_write_tracker(25);
     domains[1].set_write_tracker(25);
-    test_side_channel_potential_wrprofile_vs_none(domains.clone());
+    //test_side_channel_potential_wrprofile_vs_none(domains.clone());
+    simulate_fs_bta(&mut domains.clone());
+    simulate_fs_rankp(&mut domains.clone());
+    simulate_fs_nop(&mut domains.clone());
 }
 
 
