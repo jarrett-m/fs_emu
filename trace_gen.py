@@ -75,7 +75,7 @@ if __name__ == "__main__":
     if len(argv) == 1:
         #gen_trace(4, randint(1000000,5000000), 16,"trace.txt") #default
         #gen_trace_with_odds(2, [25, 75], randint(1100000,1500000), 16,"trace.txt")
-        gen_trace_with_odds_bank(2, [25,25], 1500000, 16,"trace.txt")
+        gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
     elif len(argv) < 4:
         print("Usage: python trace_gen.py <domains> <cycles> <banks> <file_name>")
     else:
