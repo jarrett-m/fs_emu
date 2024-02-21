@@ -50,7 +50,7 @@ fn simulate_fs_bankp_reorg_noprofile(domains: &mut Vec<domain::Domain>) -> u64 {
         clock.tick_by(9); //skip to next dead time
     }
 
-    println!("{} total system ticks to complete", clock.time());
+    //println!("{} total system ticks to complete", clock.time());
     clock.time()
 }
 
@@ -86,7 +86,7 @@ fn simulate_fs_bankp_reorg_profile(domains: &mut Vec<domain::Domain>) -> u64 {
         
     }
 
-    println!("{} total system ticks to complete", clock.time());
+    //println!("{} total system ticks to complete", clock.time());
     clock.time()
 }
 
@@ -162,36 +162,25 @@ fn test_side_channel_potential_wrprofile_vs_none(mut domains: Vec<domain::Domain
     //we guess if we are going to have a read or write, if we dont we can skip it.
     //this leaks the write/read odds, but thats it I dont see a situation where that matters.
     //risk of worse preformance if odds are profiled incorrectly.
-
-    print!("FS Bank Partition: ");
     let mut no_profile = domains.clone();
-    let bank = simulate_fs_bankp_reorg_noprofile(&mut no_profile);
-
-    print!("FS Bank R/W Profile: ");
     let mut profile = domains.clone();
-    let wr_profile = simulate_fs_bankp_reorg_profile(&mut profile);
+    
+    let no_profile_thread = thread::spawn(move || {
+        let bank = simulate_fs_bankp_reorg_noprofile(&mut no_profile);
+        print!("No Profile finished in {} ticks\n", bank);
+        bank
+    });
+
+    let profile_thread = thread::spawn(move || {
+        let wr_profile = simulate_fs_bankp_reorg_profile(&mut profile);
+        print!("Profile finished in {} ticks\n", wr_profile);
+        wr_profile
+    });
+
+    let bank = no_profile_thread.join().expect("No Profile thread panicked");
+    let wr_profile = profile_thread.join().expect("Profile thread panicked");
 
     println!("Preformance Increase: {}\n", bank as f64/wr_profile as f64);
-    
-    println!("Fake Requests No Profile");
-    for domain in no_profile.iter(){
-        println!("Domain: {}, Fake Requests: {}", domain.id, domain.fake_requests);
-    }
-
-    println!("\nFake Requests W/ Profile");
-    for domain in profile.iter() {
-        println!("Domain: {}, Fake Requests: {}", domain.id, domain.fake_requests);
-    }
-
-    println!("\nClock Fisnished Time No Profile");
-    for domain in no_profile.iter() {
-        println!("Domain: {}, Finished at: {}", domain.id, domain.tick_finished);
-    }
-
-    println!("\nClock Fisnished Time W/ Profile");
-    for domain in profile.iter() {
-        println!("Domain: {}, Finished at: {}", domain.id, domain.tick_finished);
-    }
 
 }
 
@@ -253,13 +242,15 @@ fn main() {
     // domains[0].set_write_tracker(25);
     // let mut bankp_clone = domains.clone();
     // simulate_fs_bankp(&mut bankp_clone);
-    domains[0].set_write_tracker(25);
-    domains[1].set_write_tracker(75);
+    // domains[0].set_write_tracker(80);
+    // domains[1].set_write_tracker(60);
+    // domains[2].set_write_tracker(60);
+    // domains[3].set_write_tracker(60);
 
-    test_side_channel_potential_wrprofile_vs_none(domains.clone());
-    // let mut bta_clone = domains.clone();
-    // let x = simulate_fs_bta(&mut bta_clone);
-    // let y = simulate_fs_rankp(&mut domains.clone());
+    // test_side_channel_potential_wrprofile_vs_none(domains.clone());
+
+    let x = simulate_fs_bta(&mut domains.clone());
+    let y = simulate_fs_rankp(&mut domains.clone());
     // println!("{}", x as f64/y as f64);
     // println!("Expected {}", 0.74/0.40);
 

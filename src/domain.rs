@@ -64,17 +64,17 @@ impl Domain {
         if self.read_queue.first().is_some() && self.write_queue.first().is_some() {
             if self.read_queue.first().unwrap().cylce_in < self.write_queue.first().unwrap().cylce_in {
                 if self.read_queue.first().unwrap().cylce_in <= time {
-                    self.read_queue.pop();
+                    self.read_queue.remove(0);
                 }
             } else if self.write_queue.first().unwrap().cylce_in <= time {
-                self.write_queue.pop();
+                self.write_queue.remove(0);
             }
         } else if self.read_queue.first().is_some() {
             if self.read_queue.first().unwrap().cylce_in <= time {
-                self.read_queue.pop();
+                self.read_queue.remove(0);
             }
         } else if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
-            self.write_queue.pop();
+            self.write_queue.remove(0);
         }
         else {
             self.fake_requests += 1;
@@ -139,7 +139,7 @@ impl Domain {
 
     pub fn send_next_read_request(&mut self, time: u64) {
         if self.read_queue.first().is_some() && self.read_queue.first().unwrap().cylce_in <= time {
-            self.read_queue.pop();
+            self.read_queue.remove(0);
         } else {
             self.fake_requests += 1;
         }
@@ -148,7 +148,7 @@ impl Domain {
 
     pub fn send_next_write_request(&mut self, time: u64) {
         if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
-            self.write_queue.pop();
+            self.write_queue.remove(0);
         } else {
             self.fake_requests += 1;
         }
@@ -166,15 +166,15 @@ impl Domain {
     pub fn send_next_request_odds(&mut self, time: u64) {
         if self.write_tracker[self.pointer] == 'w'{ //if next is a write
             if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
-                self.write_queue.pop(); //send next write
+                self.write_queue.remove(0); //send next write
             }
         } 
         //if next is a read
         else if self.read_queue.first().is_some() && self.read_queue.first().unwrap().cylce_in <= time { //else its read, priority to read
-            self.read_queue.pop(); //else we can only send a read
+            self.read_queue.remove(0); //else we can only send a read
         }
         else if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
-            self.write_queue.pop(); //send next write
+            self.write_queue.remove(0); //send next write
         }
         //send nothing, pretend ;)
         self.pointer = (self.pointer + 1) % self.write_tracker.len(); //move to next read or write
