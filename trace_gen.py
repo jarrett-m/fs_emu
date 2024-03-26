@@ -2,18 +2,18 @@ from random import randint
 from sys import argv
 
 def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         for cycle in range(cycles):
             cycle += randint(1, 1000)
             f.write(f"{randint(0, domains-1)} {'W' if randint(0,1) == 0 else 'R'} {cycle}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         for cycle in range(cycles):
             f.write(f"{cycle % domains} {'W' if randint(0,1) == 0 else 'R'} {cycle}\n")
 
 def gen_trace_with_odds(domains: int, odds_of_write, cycles: int, banks: int, file_name: str):
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         current_cycle = 0
         for cycle in range(cycles):
             domain = randint(0, domains-1)
@@ -36,7 +36,7 @@ def gen_trace_constant_and_random(domains: int, odds_of_write, cycles: int, bank
             if randint(0, 100) > 95: 
                 random_trace.append(f"1 {'W' if randint(0,100) < odds_of_write[1] else 'R'} {i}\n")
     
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         #write both traces, sort by cycle
         for line in sorted(constant_trace + random_trace, key=lambda x: int(x.split(' ')[2])):
             f.write(line)
@@ -56,13 +56,13 @@ def gen_trace_constant_and_random_bank(domains: int, odds_of_write, cycles: int,
             if randint(0, 100) > 95: 
                 random_trace.append(f"1 {'W' if randint(0,100) < odds_of_write[1] else 'R'} {i} {randint(0,15)}\n")
     
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         #write both traces, sort by cycle
         for line in sorted(constant_trace + random_trace, key=lambda x: int(x.split(' ')[2])):
             f.write(line)
 
 def gen_trace_with_odds_bank(domains: int, odds_of_write, cycles: int, banks: int, file_name: str):
-    with open(file_name, 'w') as f:
+    with open("traces/"+file_name, 'w') as f:
         current_cycle = 0
         for cycle in range(cycles):
             domain = randint(0, domains-1)
