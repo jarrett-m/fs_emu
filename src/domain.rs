@@ -82,6 +82,54 @@ impl Domain {
         //send nothing, pretend ;)
     }
 
+    pub fn send_next_write_request_bta(&mut self, time: u64, bank_id_allowed: u16){
+        let mut next_write_with_bank_id_index = None;
+        for (index, write) in self.write_queue.iter().enumerate() {
+            if write.cylce_in > time {
+                break;
+            }
+            if write.bank_id % 3 == bank_id_allowed {
+                next_write_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+        let next_write_with_bank_id= match next_write_with_bank_id_index {
+            Some(index) => Some(self.write_queue[index].clone()),
+            None => None,
+        };
+
+        if next_write_with_bank_id.is_some() && next_write_with_bank_id.unwrap().cylce_in <= time {
+            self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+        } else {
+            self.fake_requests += 1;
+        }
+
+    }
+
+    pub fn send_next_read_request_bta(&mut self, time: u64, bank_id_allowed: u16){
+        let mut next_read_with_bank_id_index = None;
+        for (index, read) in self.read_queue.iter().enumerate() {
+            if read.cylce_in > time {
+                break;
+            }
+            if read.bank_id % 3 == bank_id_allowed {
+                next_read_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+        let next_read_with_bank_id= match next_read_with_bank_id_index {
+            Some(index) => Some(self.read_queue[index].clone()),
+            None => None,
+        };
+
+        if next_read_with_bank_id.is_some() && next_read_with_bank_id.unwrap().cylce_in <= time {
+            self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+        } else {
+            self.fake_requests += 1;
+        }
+
+    }
+    
     pub fn send_next_request_bank(&mut self, time: u64, bank_id_allowed: u16){
         //if next request is before time, send it
 
@@ -133,6 +181,9 @@ impl Domain {
             self.read_queue.remove(next_read_with_bank_id_index.unwrap());
         } else if next_write_with_bank_id.is_some() && next_write_with_bank_id.unwrap().cylce_in <= time {
             self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+        }
+        else {
+            self.fake_requests += 1;
         }
         
     }
