@@ -79,13 +79,9 @@ fn simulate_fs_bankp_reorg_profile(domains: &mut Vec<domain::Domain>) -> u64 {
                 domains[current_domain as usize].tick_finished = clock.time();
             }
         }
-
-        
         write = !write;
         clock.tick_by(9); //skip to next dead time
-        
     }
-
     //println!("{} total system ticks to complete", clock.time());
     clock.time()
 }
@@ -129,7 +125,7 @@ fn simulate_fs_bankp(domains: &mut Vec<domain::Domain>) -> u64 {
         current_domain = (current_domain + 1) % constraints.num_domains;
     }
 
-    println!("FS_BANKP: {} total system ticks to complete", clock.time());
+    println!("FS_BANKP: {} total system ticks", clock.time());
     clock.time()
     
 }
@@ -153,6 +149,42 @@ fn simulate_fs_bta(domains: &mut Vec<domain::Domain>) -> u64 {
     }
 
     println!("FS_BTA: {} ticks to complete", clock.time());
+    clock.time()
+}
+
+fn simulate_fs_bta_wrprofile(domains: &mut Vec<domain::Domain>) -> u64 {
+    let mut clock = clock::Clock::new();
+    let constraints = clock::Constraints::new(domains.len() as u16, 6);
+
+    let mut current_bank_id: u16 = 0;
+    let mut write: bool = true;
+
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+        for i in 0..constraints.num_domains {
+            if write{
+                if domains[i as usize].can_write() {
+                    domains[i as usize].send_next_write_request_bta(clock.time(), current_bank_id);
+                    clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+                }
+            }
+            else if domains[i as usize].can_read() {
+                domains[i as usize].send_next_read_request_bta(clock.time(), current_bank_id);
+                clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+            }
+
+            current_bank_id = (current_bank_id + 1) % 3;
+            domains[i as usize].pointer = (domains[i as usize].pointer + 1) % domains[i as usize].write_tracker.len(); //move to next read or write
+        }
+
+        for current_domain in 0..constraints.num_domains {
+            if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
+                domains[current_domain as usize].tick_finished = clock.time();
+            }
+        }
+        write = !write;
+        clock.tick_by(9); //skip to next dead time
+    }
+    println!("FS_BTP: {} ticks to complete with ", clock.time());
     clock.time()
 }
 
@@ -242,18 +274,33 @@ fn main() {
     // domains[0].set_write_tracker(25);
     // let mut bankp_clone = domains.clone();
     // simulate_fs_bankp(&mut bankp_clone);
-    // domains[0].set_write_tracker(80);
-    // domains[1].set_write_tracker(60);
-    // domains[2].set_write_tracker(60);
-    // domains[3].set_write_tracker(60);
+    domains[0].set_write_tracker(90);
+    domains[1].set_write_tracker(90);
+    domains[2].set_write_tracker(90);
+    domains[3].set_write_tracker(90);
+    domains[4].set_write_tracker(90);
+    domains[5].set_write_tracker(90);
+    domains[6].set_write_tracker(90);
+    domains[7].set_write_tracker(90);
 
     // test_side_channel_potential_wrprofile_vs_none(domains.clone());
-
-    let x = simulate_fs_bta(&mut domains.clone());
-    let y = simulate_fs_rankp(&mut domains.clone());
+    let mut no_wrprofile = domains.clone();
+    let y = simulate_fs_bta(&mut no_wrprofile);
+    // let y = simulate_fs_rankp(&mut domains.clone());
+    let mut wr_domains = domains.clone();
+    let x = simulate_fs_bta_wrprofile(&mut wr_domains);
     // println!("{}", x as f64/y as f64);
     // println!("Expected {}", 0.74/0.40);
-
+    println!("Preformance Increase: {}", y as f64/x as f64);
+    
+    println!("WR Profile:");
+    for domain in wr_domains.iter() {
+        println!("Domain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
+    }
+    println!("No WR Profile:");
+    for domain in no_wrprofile.iter() {
+        println!("Domain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
+    }
 
 
 }
