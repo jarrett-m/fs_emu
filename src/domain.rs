@@ -62,23 +62,22 @@ impl Domain {
     pub fn send_next_request(&mut self, time: u64) {
         //if next request is before time, send it
         if self.read_queue.first().is_some() && self.write_queue.first().is_some() {
-            if self.read_queue.first().unwrap().cylce_in < self.write_queue.first().unwrap().cylce_in {
-                if self.read_queue.first().unwrap().cylce_in <= time {
-                    self.read_queue.remove(0);
-                }
+            if self.read_queue.first().unwrap().cylce_in <= self.write_queue.first().unwrap().cylce_in && self.read_queue.first().unwrap().cylce_in <= time{
+                self.read_queue.remove(0);
+                return;
             } else if self.write_queue.first().unwrap().cylce_in <= time {
                 self.write_queue.remove(0);
+                return;
             }
-        } else if self.read_queue.first().is_some() {
-            if self.read_queue.first().unwrap().cylce_in <= time {
-                self.read_queue.remove(0);
-            }
+        } else if self.read_queue.first().is_some() && self.read_queue.first().unwrap().cylce_in <= time {
+            self.read_queue.remove(0);
+            return;
         } else if self.write_queue.first().is_some() && self.write_queue.first().unwrap().cylce_in <= time {
             self.write_queue.remove(0);
+            return;
         }
-        else {
-            self.fake_requests += 1;
-        }
+
+        self.fake_requests += 1;
         //send nothing, pretend ;)
     }
 
@@ -136,8 +135,9 @@ impl Domain {
         //get oldest sent request for the req.bank_id % 3 = bank_id_allowed from read
         // remove it if time allows
 
+
+        //get next apprioriate read
         let mut next_read_with_bank_id_index = None;
-        let mut next_write_with_bank_id_index = None;
         for (index, read) in self.read_queue.iter().enumerate() {
             if read.cylce_in > time {
                 break;
@@ -148,6 +148,8 @@ impl Domain {
             }
         }
 
+        //get next apprioriate write
+        let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
             if write.cylce_in > time {
                 break;
@@ -158,6 +160,7 @@ impl Domain {
             }
         }
 
+
         let next_read_with_bank_id = match next_read_with_bank_id_index {
             Some(index) => Some(self.read_queue[index].clone()),
             None => None,
@@ -167,19 +170,26 @@ impl Domain {
             Some(index) => Some(self.write_queue[index].clone()),
             None => None,
         };
+
+        //if both are None, we have a fake request
         if !next_read_with_bank_id.is_some() && !next_write_with_bank_id.is_some(){
             self.fake_requests += 1;
         }
+
+        //if both are Some, send the oldest request
         if next_read_with_bank_id.is_some() && next_write_with_bank_id.is_some() {
-            if next_read_with_bank_id.clone().unwrap().cylce_in < next_write_with_bank_id.clone().unwrap().cylce_in {
-                    self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+            if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
+                self.read_queue.remove(next_read_with_bank_id_index.unwrap());
             } else {
                 self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-                }
             }
+        }
+        //if only read, send it
         else if next_read_with_bank_id.is_some() {
             self.read_queue.remove(next_read_with_bank_id_index.unwrap());
-        } else if next_write_with_bank_id.is_some() && next_write_with_bank_id.unwrap().cylce_in <= time {
+        }
+        //if only write, send it 
+        else if next_write_with_bank_id.is_some(){
             self.write_queue.remove(next_write_with_bank_id_index.unwrap());
         }
         else {
