@@ -190,6 +190,37 @@ fn simulate_fs_bta(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domai
     (clock.time(), domains.clone())
 }
 
+fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
+    let mut clock = clock::Clock::new();
+    let constraints = clock::Constraints::new(domains.len() as u16, 15);
+    let mut current_domain: u16 = 0;
+    let mut current_bank_id: u16 = 0;
+
+    //for each domain, split the threads evenly between qeueu and queue_node2
+    for domain in domains.iter_mut() {
+        domain.split_requests_node_based();
+    }
+
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+        //Send the next request with allowed bank
+        domains[current_domain as usize].send_next_request_bank_numa(clock.time(), current_bank_id);
+        clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+
+        //if there are no more request, set the program finish time
+        if  domains[current_domain as usize].read_queue.is_empty() && 
+        domains[current_domain as usize].write_queue.is_empty() && 
+        domains[current_domain as usize].write_queue_node2.is_empty() && 
+        domains[current_domain as usize].read_queue_node2.is_empty() && 
+        domains[current_domain as usize].tick_finished == 0
+        {
+            domains[current_domain as usize].tick_finished = clock.time();
+        }
+        current_domain = (current_domain + 1) % constraints.num_domains;
+        current_bank_id = (current_bank_id + 1) % 3;
+    }
+    (clock.time(), domains.clone())
+}
+
 fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
     let mut clock = clock::Clock::new();
     let constraints = clock::Constraints::new(domains.len() as u16, 15);
@@ -269,7 +300,7 @@ fn main() {
 
     //threads to make it run faster
     let bta_thread = thread::spawn(move || {
-        simulate_fs_bta(&mut bta_domains)
+        simulate_fs_base_numa(&mut bta_domains)
     });
     
     let bta_dve_thread = thread::spawn(move || {
@@ -285,12 +316,12 @@ fn main() {
         println!("\tDomain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
     }
 
-    println!("\nDve+FSL:BTA Stats");
+    println!("\nDve+FS-BTA Stats:");
     println!("\tTotal ticks to finish entire simulation: {}", bta_dve_data.0);
     for domain in bta_dve_data.1.iter() {
         println!("\tDomain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
     }
     
-    println!("\nRank Partition is {} times faster than BTA", bta_data.0 as f64 / bta_dve_data.0 as f64);
+    println!("\nDve+FS:BTA is {} times faster than BTA", bta_data.0 as f64 / bta_dve_data.0 as f64);
 }
 
