@@ -8,8 +8,8 @@ pub struct Domain {
     pub read_queue: Vec<Request>,
 
     //profile stuff, not always used
-    pub write_tracker: Vec<char>,
-    pub pointer: usize,
+    // pub write_tracker: Vec<char>,
+    // pub pointer: usize,
     pub read_queue_node2: Vec<Request>,
     pub write_queue_node2: Vec<Request>,
 
@@ -24,8 +24,8 @@ impl Domain {
             id,
             write_queue: Vec::new(),
             read_queue: Vec::new(),
-            write_tracker: Vec::new(),
-            pointer: 0,
+            // write_tracker: Vec::new(),
+            // pointer: 0,
             fake_requests: 0,
             tick_finished: 0,
             read_queue_node2: Vec::new(),
@@ -59,6 +59,17 @@ impl Domain {
         self.write_queue = self.write_queue.iter().filter(|x| x.thread_id <= lower_bound).cloned().collect();
     }
 
+    pub fn split_evenly(&mut self) {
+        
+        //split in half every other request
+        self.read_queue_node2 = self.read_queue.iter().enumerate().filter(|(i, _)| i % 2 == 0).map(|(_, x)| x.clone()).collect();
+        self.write_queue_node2 = self.write_queue.iter().enumerate().filter(|(i, _)| i % 2 == 0).map(|(_, x)| x.clone()).collect();
+
+        //remove them from node 1
+        self.read_queue = self.read_queue.iter().enumerate().filter(|(i, _)| i % 2 == 1).map(|(_, x)| x.clone()).collect();
+        self.write_queue = self.write_queue.iter().enumerate().filter(|(i, _)| i % 2 == 1).map(|(_, x)| x.clone()).collect();
+    }
+
     // pub fn set_write_tracker(&mut self, odds: u8)  {
     //     //writes 
     //     let write_count = max(odds, 1);
@@ -88,6 +99,134 @@ impl Domain {
 
     pub fn add_read_request(&mut self, request: Request) {
         self.read_queue.push(request);
+    }
+
+    pub fn send_next_request_bank_mirror(&mut self, time: u64, bank_id_allowed: u16){
+                //if next request is before time, send it
+        //get oldest sent request for the req.bank_id % 3 = bank_id_allowed from read
+        // remove it if time allows
+        //get next apprioriate read
+        let mut next_read_with_bank_id_index = None;
+        for (index, read) in self.read_queue.iter().enumerate() {
+            if read.cylce_in > time {
+                break;
+            }
+            if read.bank_id % 3 == bank_id_allowed {
+                next_read_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+
+        //get next apprioriate write
+        let mut next_write_with_bank_id_index = None;
+        for (index, write) in self.write_queue.iter().enumerate() {
+            if write.cylce_in > time {
+                break;
+            }
+            if write.bank_id % 3 == bank_id_allowed {
+                next_write_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+
+        let next_read_with_bank_id = match next_read_with_bank_id_index {
+            Some(index) => Some(self.read_queue[index].clone()),
+            None => None,
+        };
+
+        let next_write_with_bank_id= match next_write_with_bank_id_index {
+            Some(index) => Some(self.write_queue[index].clone()),
+            None => None,
+        };
+
+        //if both are None, we have a fake request
+        if !next_read_with_bank_id.is_some() && !next_write_with_bank_id.is_some(){
+            self.fake_requests += 1;
+        }
+
+        //if both are Some, send the oldest request
+        if next_read_with_bank_id.is_some() && next_write_with_bank_id.is_some() {
+            if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
+                self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+            } else {
+                let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+                self.read_queue_node2.push(req);
+            }
+        }
+        //if only read, send it
+        else if next_read_with_bank_id.is_some() {
+            self.read_queue.remove(next_read_with_bank_id_index.unwrap());
+        }
+        //if only write, send it 
+        else if next_write_with_bank_id.is_some(){
+            let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+            self.read_queue_node2.push(req);
+        }
+        else {
+            self.fake_requests += 1;
+        }
+
+        //----------------- then again for node 2 --------------------
+        let mut next_read_with_bank_id_index = None;
+        for (index, read) in self.read_queue_node2.iter().enumerate() {
+            if read.cylce_in > time {
+                break;
+            }
+            if read.bank_id % 3 == bank_id_allowed {
+                next_read_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+
+        //get next apprioriate write
+        let mut next_write_with_bank_id_index = None;
+        for (index, write) in self.write_queue_node2.iter().enumerate() {
+            if write.cylce_in > time {
+                break;
+            }
+            if write.bank_id % 3 == bank_id_allowed {
+                next_write_with_bank_id_index = Some(index);
+                break;
+            }
+        }
+
+        let next_read_with_bank_id = match next_read_with_bank_id_index {
+            Some(index) => Some(self.read_queue_node2[index].clone()),
+            None => None,
+        };
+
+        let next_write_with_bank_id= match next_write_with_bank_id_index {
+            Some(index) => Some(self.write_queue_node2[index].clone()),
+            None => None,
+        };
+
+        //if both are None, we have a fake request
+        if !next_read_with_bank_id.is_some() && !next_write_with_bank_id.is_some(){
+            self.fake_requests += 1;
+        }
+
+        //if both are Some, send the oldest request
+        if next_read_with_bank_id.is_some() && next_write_with_bank_id.is_some() {
+            if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
+                self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
+            } else {
+                let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+                self.read_queue.push(req);
+            }
+        }
+        //if only read, send it
+        else if next_read_with_bank_id.is_some() {
+            self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
+        }
+        //if only write, send it 
+        else if next_write_with_bank_id.is_some(){
+            let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+            self.read_queue.push(req);
+        }
+        else {
+            self.fake_requests += 1;
+        }
+        
     }
 
     pub fn send_next_request(&mut self, time: u64) {

@@ -221,6 +221,32 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
     (clock.time(), domains.clone())
 }
 
+fn simulate_fs_mirrior_channels(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
+    let mut clock = clock::Clock::new();
+    let constraints = clock::Constraints::new(domains.len() as u16, 15);
+    let mut current_domain: u16 = 0;
+    let mut current_bank_id: u16 = 0;
+
+    //for each domain, split the threads evenly between qeueu and queue_node2
+    for domain in domains.iter_mut() {
+        domain.split_evenly();
+    }
+
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+        //Send the next request with allowed bank
+        domains[current_domain as usize].send_next_request_bank_mirror(clock.time(), current_bank_id);
+        clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+
+        //if there are no more request, set the program finish time
+        if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
+            domains[current_domain as usize].tick_finished = clock.time();
+        }
+        current_domain = (current_domain + 1) % constraints.num_domains;
+        current_bank_id = (current_bank_id + 1) % 3;
+    }
+    (clock.time(), domains.clone())
+}
+
 fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
     let mut clock = clock::Clock::new();
     let constraints = clock::Constraints::new(domains.len() as u16, 15);
@@ -300,7 +326,7 @@ fn main() {
 
     //threads to make it run faster
     let bta_thread = thread::spawn(move || {
-        simulate_fs_base_numa(&mut bta_domains)
+        simulate_fs_bta(&mut bta_domains)
     });
     
     let bta_dve_thread = thread::spawn(move || {
