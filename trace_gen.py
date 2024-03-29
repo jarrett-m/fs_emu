@@ -5,6 +5,8 @@ def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
         for cycle in range(cycles):
             cycle += randint(1, 10)
+            #domain, op, cycle, bank, thread
+                        #domain                #op                                #cycle  #bank              #thread
             f.write(f"{randint(0, domains-1)} {'W' if randint(0,1) == 0 else 'R'} {cycle} {randint(0,banks)} {randint(0,7)}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):

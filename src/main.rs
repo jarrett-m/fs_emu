@@ -175,7 +175,10 @@ fn simulate_fs_bta(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domai
     let mut current_domain: u16 = 0;
     let mut current_bank_id: u16 = 0;
 
-    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
+        domains.iter().any(|domain| !domain.write_queue.is_empty() || 
+        domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
+        domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) {
         //Send the next request with allowed bank
         domains[current_domain as usize].send_next_request_bank(clock.time(), current_bank_id);
         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
@@ -201,11 +204,49 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
         domain.split_requests_node_based();
     }
 
-    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
+        domains.iter().any(|domain| !domain.write_queue.is_empty() || 
+        domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
+        domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) {
         //Send the next request with allowed bank
         domains[current_domain as usize].send_next_request_bank_numa(clock.time(), current_bank_id);
         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
 
+        //if there are no more request, set the program finish time
+        if  domains[current_domain as usize].read_queue.is_empty() && 
+        domains[current_domain as usize].write_queue.is_empty() && 
+        domains[current_domain as usize].write_queue_node2.is_empty() && 
+        domains[current_domain as usize].read_queue_node2.is_empty() && 
+        domains[current_domain as usize].tick_finished == 0
+        {
+            domains[current_domain as usize].tick_finished = clock.time();
+        }
+        current_domain = (current_domain + 1) % constraints.num_domains;
+        current_bank_id = (current_bank_id + 1) % 3;
+    }
+    (clock.time(), domains.clone())
+}
+
+fn simulate_base_two_channels(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
+    let mut clock = clock::Clock::new();
+    let constraints = clock::Constraints::new(domains.len() as u16, 15);
+    let mut current_domain: u16 = 0;
+    let mut current_bank_id: u16 = 0;
+
+    //for each domain, split the threads evenly between qeueu and queue_node2
+    for domain in domains.iter_mut() {
+        domain.split_by_channel();
+    }
+
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
+          domains.iter().any(|domain| !domain.write_queue.is_empty() || 
+          domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
+          domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) {
+        //Send the next request with allowed bank
+        domains[current_domain as usize].send_next_request_channel(clock.time(), current_bank_id);
+        clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+
+        //if there are no more request, set the program finish time
         //if there are no more request, set the program finish time
         if  domains[current_domain as usize].read_queue.is_empty() && 
         domains[current_domain as usize].write_queue.is_empty() && 
@@ -232,13 +273,21 @@ fn simulate_fs_mirrior_channels(domains: &mut Vec<domain::Domain>) -> (u64, Vec<
         domain.split_evenly();
     }
 
-    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
+        domains.iter().any(|domain| !domain.write_queue.is_empty() || 
+        domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
+        domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) {
         //Send the next request with allowed bank
         domains[current_domain as usize].send_next_request_bank_mirror(clock.time(), current_bank_id);
         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
 
         //if there are no more request, set the program finish time
-        if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
+        if  domains[current_domain as usize].read_queue.is_empty() && 
+        domains[current_domain as usize].write_queue.is_empty() && 
+        domains[current_domain as usize].write_queue_node2.is_empty() && 
+        domains[current_domain as usize].read_queue_node2.is_empty() && 
+        domains[current_domain as usize].tick_finished == 0
+        {
             domains[current_domain as usize].tick_finished = clock.time();
         }
         current_domain = (current_domain + 1) % constraints.num_domains;
@@ -258,7 +307,10 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
         domain.split_threads_evenly();
     }
 
-    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
+    while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
+        domains.iter().any(|domain| !domain.write_queue.is_empty() || 
+        domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
+        domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) {
         //Send the next request with allowed bank
         domains[current_domain as usize].send_next_request_bank_dve(clock.time(), current_bank_id);
         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
@@ -282,7 +334,8 @@ fn process_trace_file() -> Vec<domain::Domain> {
     let mut domains: Vec<domain::Domain> = Vec::new();
 
     //turn data into domain structs
-    let file = File::open("traces/trace.txt").expect("Failed to open trace.txt");
+    // let file = File::open("traces/trace.txt").expect("Failed to open trace.txt");
+    let file = File::open("new_trace/final_trace_new.txt").expect("Failed to open trace.txt");
     let reader = BufReader::new(file);
 
     //read trace and turn into domain structs
@@ -323,6 +376,8 @@ fn main() {
     
     let mut bta_domains = domains.clone();
     let mut bta_dve_domains = domains.clone();
+    let mut base_two_domains = domains.clone();
+    let mut bta_mirror_domains = domains.clone();
 
     //threads to make it run faster
     let bta_thread = thread::spawn(move || {
@@ -332,9 +387,19 @@ fn main() {
     let bta_dve_thread = thread::spawn(move || {
         simulate_fs_bta_dve(&mut bta_dve_domains)
     });
+
+    let base_channels = thread::spawn(move || {
+        simulate_base_two_channels(&mut base_two_domains)
+    });
+    
+    let bta_channel_mirror = thread::spawn(move || {
+        simulate_fs_mirrior_channels(&mut bta_mirror_domains)
+    });
     
     let bta_data = bta_thread.join().unwrap();
     let bta_dve_data = bta_dve_thread.join().unwrap();
+    let base_channels_data = base_channels.join().unwrap();
+    let bta_channel_mirror_data = bta_channel_mirror.join().unwrap();
 
     println!("BTA Stats:");
     println!("\tTotal ticks to finish entire simulation: {}", bta_data.0);
@@ -349,5 +414,20 @@ fn main() {
     }
     
     println!("\nDve+FS:BTA is {} times faster than BTA", bta_data.0 as f64 / bta_dve_data.0 as f64);
+
+    println!("\nFS Mirroring Channels Stats:");
+    println!("\tTotal ticks to finish entire simulation: {}", bta_channel_mirror_data.0);
+    for domain in bta_channel_mirror_data.1.iter() {
+        println!("\tDomain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
+    }
+
+    println!("\nFS Base Two Channels Stats:");
+    println!("\tTotal ticks to finish entire simulation: {}", base_channels_data.0);
+    for domain in base_channels_data.1.iter() {
+        println!("\tDomain {} finished in {} ticks: fake requests: {}", domain.id, domain.tick_finished, domain.fake_requests);
+    }
+
+    println!("FS Mirroring Channels is {} times faster than Base Two Channels", base_channels_data.0 as f64 / bta_channel_mirror_data.0 as f64);
+
 }
 
