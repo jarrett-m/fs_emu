@@ -1,15 +1,19 @@
+use crate::domain::Request;
+
 pub struct Clock {
     time: u64,
+    pub transfer_queue_to_node_1: Option<Request>,
+    pub transfer_queue_to_node_2: Option<Request>,
 }
 
 impl Clock {
     pub fn new() -> Self {
-        Clock { time: 0 }
+        Clock { 
+            time: 0,
+            transfer_queue_to_node_1: None,
+            transfer_queue_to_node_2: None,
+        }
     }
-
-    // pub fn tick(&mut self) {
-    //     self.time += 1;
-    // }
 
     pub fn tick_by(&mut self, ticks: u64) {
         self.time += ticks;

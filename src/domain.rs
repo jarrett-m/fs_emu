@@ -1,6 +1,6 @@
 // use std::cmp::max;
 
-
+use rand::Rng;
 #[derive(Clone)]
 pub struct Domain {
     pub id: u16,
@@ -12,6 +12,10 @@ pub struct Domain {
     // pub pointer: usize,
     pub read_queue_node2: Vec<Request>,
     pub write_queue_node2: Vec<Request>,
+
+    //numa stuff
+    pub numa1_to_numa2: Vec<Request>,
+    pub numa2_to_numa1: Vec<Request>,
 
     //stats
     pub fake_requests: u64,
@@ -30,19 +34,128 @@ impl Domain {
             tick_finished: 0,
             read_queue_node2: Vec::new(),
             write_queue_node2: Vec::new(),
+            numa1_to_numa2: Vec::new(),
+            numa2_to_numa1: Vec::new(),
         }
     }
-    pub fn split_requests_node_based(&mut self) {
-        let middle_bank_id = (self.read_queue.iter().map(|x| x.bank_id).max().unwrap() / 2) + 2;
 
+    // pub transfer_node_requests(&mut self) {
+    //     //check all read and write queues
+
+    //     //if read or write is from node 1 to node 2, move it to node 2
+    //     //if read or write is from node 2 to node 1, move it to node 1
+    //     //add a delay of 64 cycles Number of cycles required = (Transfer rate) * (Total time) = (10 * 10^9 cycles/second) * (6.4 * 10^-9 seconds) = 64 cycles
+
+    //     //node 1 to node 2
+    //     todo()!
+        
+    // }
+    pub fn copy_write_to_transfer(&mut self, time: u64) {
+        // put all pending writes in the transfer queue that are ready
+        let mut t1: Vec<_> = self.write_queue.iter().filter(|x| x.cylce_in <= time).cloned().collect();
+        // remove duplicates in t1 that are in self.numa1_to_numa2
+        t1.retain(|x| !self.numa1_to_numa2.contains(x));
+        // add 64 cycles to the time
+        // for mut x in &mut t1 {
+        //     x.cylce_in += 64;
+        // }
+        self.numa1_to_numa2.extend(t1);
+        // again
+
+        let mut t2: Vec<_> = self.write_queue_node2.iter().filter(|x| x.cylce_in <= time).cloned().collect();
+        t2.retain(|x| !self.numa2_to_numa1.contains(x));
+        // for mut x in &mut t2 {
+        //     x.cylce_in += 64;
+        // }
+        self.numa2_to_numa1.extend(t2);
+    }
+
+    pub fn get_next_t_from_numa1(&mut self, time: u64) -> Option<Request> {
+        if self.numa1_to_numa2.first().is_some() {
+            if self.numa1_to_numa2.first().unwrap().cylce_in <= time {
+                let r = self.numa1_to_numa2.remove(0);
+                return Some(r)
+            }
+        }
+        return None;
+    }
+
+    pub fn get_next_t_from_numa2(&mut self, time: u64) -> Option<Request> {
+        if self.numa2_to_numa1.first().is_some() {
+            if self.numa2_to_numa1.first().unwrap().cylce_in <= time {
+                let r = self.numa2_to_numa1.remove(0);
+                return Some(r)
+            }
+        }
+        return None;
+    }
+
+    pub fn get_next_transfer_request_numa(&mut self, time: u64, transfer_to_node: u16) -> Option<Request> {
+        if transfer_to_node == 2{
+            for (index, req) in self.read_queue.iter().enumerate() {
+                if req.cylce_in <= time {
+                    if req.channel == 1 {
+                        let mut request = self.read_queue.remove(index);
+                        request.cylce_in = time + 128;
+                        return Some(request);
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            for (index, req) in self.write_queue.iter().enumerate() {
+                if req.cylce_in <= time {
+                    if req.channel == 1 {
+                        let mut request = self.write_queue.remove(index);
+                        request.cylce_in = time + 64;
+                        return Some(request);
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            return None;
+        }
+        if transfer_to_node == 1{
+            for (index, req) in self.read_queue_node2.iter().enumerate() {
+                if req.cylce_in <= time {
+                    if req.channel == 0 {
+                        let mut request = self.read_queue_node2.remove(index);
+                        request.cylce_in = time + 128;
+                        return Some(request);
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            for (index, req) in self.write_queue_node2.iter().enumerate() {
+                if req.cylce_in <= time {
+                    if req.channel == 0 {
+                        let mut request = self.write_queue_node2.remove(index);
+                        request.cylce_in = time + 64;
+                        return Some(request);
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            return None;
+        }
+        return None;
+    }
+
+    pub fn split_requests_node_based(&mut self) {
         //move middle_bank_id to node 2
-        self.read_queue_node2 = self.read_queue.iter().filter(|x| x.bank_id > middle_bank_id).cloned().collect();
-        self.write_queue_node2 = self.write_queue.iter().filter(|x| x.bank_id > middle_bank_id).cloned().collect();
+        self.read_queue_node2 = self.read_queue.iter().filter(|x| x.node == 0).cloned().collect();
+        self.write_queue_node2 = self.write_queue.iter().filter(|x| x.node == 0).cloned().collect();
 
         //remove them from node 1
-        self.read_queue = self.read_queue.iter().filter(|x| x.bank_id <= middle_bank_id).cloned().collect();
-        self.write_queue = self.write_queue.iter().filter(|x| x.bank_id <= middle_bank_id).cloned().collect();
-
+        self.read_queue = self.read_queue.iter().filter(|x| x.node == 1).cloned().collect();
+        self.write_queue = self.write_queue.iter().filter(|x| x.node == 1).cloned().collect();
     }
 
     pub fn split_threads_evenly(&mut self) {
@@ -59,13 +172,42 @@ impl Domain {
         self.write_queue = self.write_queue.iter().filter(|x| x.thread_id <= lower_bound).cloned().collect();
     }
     pub fn split_by_channel(&mut self){
-        //8 banks, 0,1,2,3 to node 1, 4,5,6,7 to node 2
-        self.read_queue_node2 = self.read_queue.iter().filter(|x| x.bank_id >= 4).cloned().collect();
-        self.write_queue_node2 = self.write_queue.iter().filter(|x| x.bank_id >= 4).cloned().collect();
+        // self.read_queue_node2 = self.read_queue.iter().filter(|x| x.bank_id >= 4).cloned().collect();
+        // self.write_queue_node2 = self.write_queue.iter().filter(|x| x.bank_id >= 4).cloned().collect();
 
         //remove them from node 1
-        self.read_queue = self.read_queue.iter().filter(|x| x.bank_id < 4).cloned().collect();
-        self.write_queue = self.write_queue.iter().filter(|x| x.bank_id < 4).cloned().collect();
+        // self.read_queue = self.read_queue.iter().filter(|x| x.bank_id < 4).cloned().collect();
+        // self.write_queue = self.write_queue.iter().filter(|x| x.bank_id < 4).cloned().collect();
+
+        //split by about 60% with rand
+        let mut rng = rand::thread_rng();
+        let mut read_queue_node2 = Vec::new();
+        let mut write_queue_node2 = Vec::new();
+        for req in self.read_queue.iter() {
+            let rand: f64 = rng.gen();
+            if rand > 0.70 {
+                read_queue_node2.push(req.clone());
+            }
+        }
+        for req in self.write_queue.iter() {
+            let rand: f64 = rng.gen();
+            if rand > 0.70 {
+                write_queue_node2.push(req.clone());
+            }
+        }
+
+                //remove them from node 1
+        self.read_queue = self.read_queue.iter().filter(|x| !read_queue_node2.contains(x)).cloned().collect();
+        self.write_queue = self.write_queue.iter().filter(|x| !write_queue_node2.contains(x)).cloned().collect();
+
+
+
+        self.read_queue_node2 = read_queue_node2;
+        self.write_queue_node2 = write_queue_node2;
+
+
+       
+    
     }
 
     pub fn split_evenly(&mut self) {
@@ -504,6 +646,9 @@ impl Domain {
         //get next apprioriate read
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue.iter().enumerate() {
+            if read.channel != 0 {
+                continue;
+            }
             if read.cylce_in > time {
                 break;
             }
@@ -516,6 +661,9 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
+            if write.channel != 0 {
+                continue;
+            }
             if write.cylce_in > time {
                 break;
             }
@@ -545,8 +693,7 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-                self.read_queue_node2.push(req);
+                self.write_queue.remove(next_write_with_bank_id_index.unwrap());
             }
         }
         //if only read, send it
@@ -555,8 +702,7 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-            self.read_queue_node2.push(req);
+            self.write_queue.remove(next_write_with_bank_id_index.unwrap());
         }
         else {
             self.fake_requests += 1;
@@ -565,6 +711,9 @@ impl Domain {
         //----------------- then again for node 2 --------------------
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue_node2.iter().enumerate() {
+            if read.channel != 1 {
+                continue;
+            }
             if read.cylce_in > time {
                 break;
             }
@@ -577,6 +726,9 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue_node2.iter().enumerate() {
+            if write.channel != 1 {
+                continue;
+            }
             if write.cylce_in > time {
                 break;
             }
@@ -606,8 +758,7 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-                self.read_queue.push(req);
+                self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
             }
         }
         //if only read, send it
@@ -616,8 +767,7 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-            self.read_queue.push(req);
+            self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
         }
         else {
             self.fake_requests += 1;
@@ -641,6 +791,7 @@ impl Domain {
             }
         }
 
+        
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
@@ -673,8 +824,7 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-                self.read_queue_node2.push(req);
+                self.write_queue.remove(next_write_with_bank_id_index.unwrap());
             }
         }
         //if only read, send it
@@ -683,8 +833,7 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            let req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-            self.read_queue_node2.push(req);
+            self.write_queue.remove(next_write_with_bank_id_index.unwrap());
         }
         else {
             self.fake_requests += 1;
@@ -734,8 +883,7 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-                self.read_queue.push(req);
+                self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
             }
         }
         //if only read, send it
@@ -744,13 +892,12 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            let req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-            self.read_queue.push(req);
+            self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
         }
         else {
             self.fake_requests += 1;
         }
-        
+
     }
 
     // pub fn send_next_read_request(&mut self, time: u64) {
@@ -819,6 +966,9 @@ pub struct Request {
     pub cylce_in: u64,
     pub bank_id: u16,
     pub thread_id: u16,
+    pub node: u16,
+    pub channel: u16,
+    pub domain: u16,
 }
 
 impl Request {
@@ -826,7 +976,7 @@ impl Request {
     //     Request { request_type, cylce_in}
     // }
 
-    pub fn new(request_type: RequestType, cylce_in: u64, bank_id: u16, thread_id: u16) -> Request {
-        Request { request_type, cylce_in, bank_id, thread_id}
+    pub fn new(request_type: RequestType, cylce_in: u64, bank_id: u16, thread_id: u16, node: u16, channel: u16, domain: u16) -> Request {
+        Request {request_type, cylce_in, bank_id, thread_id, node, channel, domain}
     }
 }
