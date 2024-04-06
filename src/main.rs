@@ -272,7 +272,7 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
 
     //for each domain, split the threads evenly between qeueu and queue_node2
     for domain in domains.iter_mut() {
-        domain.split_requests_node_based();
+        domain.split_threads_evenly();
     }
 
     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
@@ -328,7 +328,7 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
         domains[current_domain as usize].write_queue.is_empty() && 
         domains[current_domain as usize].write_queue_node2.is_empty() && 
         domains[current_domain as usize].read_queue_node2.is_empty() && 
-        domains[current_domain as usize].tick_finished == 0
+        domains[current_domain as usize].tick_finished == 0 
         {
             domains[current_domain as usize].tick_finished = clock.time();
         }
@@ -411,8 +411,8 @@ fn process_trace_file() -> Vec<domain::Domain> {
     let mut domains: Vec<domain::Domain> = Vec::new();
 
     // //turn data into domain structs
-    //  let file = File::open("traces/trace.txt").expect("Failed to open trace.txt");
-    let file = File::open("new_trace/final_trace_new.txt").expect("Failed to open trace.txt");
+     let file = File::open("traces/trace.txt").expect("Failed to open trace.txt");
+    // let file = File::open("new_trace/final_trace_new.txt").expect("Failed to open trace.txt");
     let reader = BufReader::new(file);
 
     //read trace and turn into domain structs

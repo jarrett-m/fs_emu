@@ -55,18 +55,21 @@ impl Domain {
         let mut t1: Vec<_> = self.write_queue.iter().filter(|x| x.cylce_in <= time).cloned().collect();
         // remove duplicates in t1 that are in self.numa1_to_numa2
         t1.retain(|x| !self.numa1_to_numa2.contains(x));
+        //remove from write queue
+        self.write_queue.retain(|x| !t1.contains(x));
         // add 64 cycles to the time
-        // for mut x in &mut t1 {
-        //     x.cylce_in += 64;
-        // }
+        for mut x in &mut t1 {
+            x.cylce_in += 64;
+        }
         self.numa1_to_numa2.extend(t1);
         // again
 
         let mut t2: Vec<_> = self.write_queue_node2.iter().filter(|x| x.cylce_in <= time).cloned().collect();
         t2.retain(|x| !self.numa2_to_numa1.contains(x));
-        // for mut x in &mut t2 {
-        //     x.cylce_in += 64;
-        // }
+        self.write_queue_node2.retain(|x| !t2.contains(x));
+        for mut x in &mut t2 {
+            x.cylce_in += 64;
+        }
         self.numa2_to_numa1.extend(t2);
     }
 
@@ -646,11 +649,11 @@ impl Domain {
         //get next apprioriate read
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue.iter().enumerate() {
+            if read.cylce_in >= time {
+                break;
+            }
             if read.channel != 0 {
                 continue;
-            }
-            if read.cylce_in > time {
-                break;
             }
             if read.bank_id % 3 == bank_id_allowed {
                 next_read_with_bank_id_index = Some(index);
@@ -661,11 +664,11 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
+            if write.cylce_in >= time {
+                break;
+            }
             if write.channel != 0 {
                 continue;
-            }
-            if write.cylce_in > time {
-                break;
             }
             if write.bank_id % 3 == bank_id_allowed {
                 next_write_with_bank_id_index = Some(index);
@@ -711,11 +714,11 @@ impl Domain {
         //----------------- then again for node 2 --------------------
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue_node2.iter().enumerate() {
+            if read.cylce_in >= time {
+                break;
+            }
             if read.channel != 1 {
                 continue;
-            }
-            if read.cylce_in > time {
-                break;
             }
             if read.bank_id % 3 == bank_id_allowed {
                 next_read_with_bank_id_index = Some(index);
@@ -726,11 +729,11 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue_node2.iter().enumerate() {
+            if write.cylce_in >= time {
+                break;
+            }
             if write.channel != 1 {
                 continue;
-            }
-            if write.cylce_in > time {
-                break;
             }
             if write.bank_id % 3 == bank_id_allowed {
                 next_write_with_bank_id_index = Some(index);

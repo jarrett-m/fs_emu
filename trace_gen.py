@@ -4,9 +4,9 @@ from sys import argv
 def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
         for cycle in range(cycles):
-            cycle += randint(50, 5000)
+            cycle += randint(1, 500)
             thread = randint(0, 7)
-            if thread % 2 == 1:
+            if thread % 2 == 0:
                 node = 0
             else:
                 node = 1
@@ -85,7 +85,7 @@ def gen_trace_with_odds_bank(domains: int, odds_of_write, cycles: int, banks: in
 if __name__ == "__main__":
     if len(argv) == 1:
         # gen_trace(1, 1000, 15,"trace.txt") #default
-        gen_trace_with_odds(2, [20, 50], randint(1100000,1500000), 16,"trace.txt")
+        gen_trace_with_odds(8, [30, 30, 30, 30, 30, 30, 30, 30], randint(1100000,1500000), 16,"trace.txt")
         #gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
         # gen_trace_with_odds_bank(1, [100], 10000, 16,"trace.txt")
     elif len(argv) == 4:
