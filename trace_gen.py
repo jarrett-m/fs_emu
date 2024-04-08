@@ -12,11 +12,11 @@ def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
             else:
                 node = 0
 
-            channel = 1
+            channel = randint(0, 1)
             
             #domain, op, cycle, bank, thread
                         #domain                #op                                #cycle    #bank             #thread  #node #channel
-            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) > 100 else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
+            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) > 70 else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
