@@ -11,11 +11,10 @@ set -e
 # done
 
 
-for i in {1..10}; do
     # Generate the trace file
-    python3 trace_gen.py 8 10000 16 traces/trace.txt
+    python3 trace_gen.py 8 1000 16 traces/trace.txt
 
     # Run the Rust program 10 times and output the result to a file
 
-    cargo run >> output.txt
-done
+    cargo run 
+

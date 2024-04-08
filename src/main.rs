@@ -361,18 +361,18 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
         
         domains[current_domain as usize].copy_write_to_transfer(clock.time());
 
-        if clock.transfer_queue_to_node_2 == None{
+        if clock.transfer_queue_to_node_2 == None {
             clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_t_from_numa1(clock.time());
-            last_transfer1 = clock.time();
+            last_transfer2 = clock.time();
         }
         //transfer requests from node 2 to node 1
-        if clock.transfer_queue_to_node_1 == None{
+        if clock.transfer_queue_to_node_1 == None {
             clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_t_from_numa2(clock.time());
-            last_transfer2 = clock.time();
+            last_transfer1 = clock.time();
         }
 
         //remove the request from the transfer queue if it is done into the read or write queue
-        if clock.transfer_queue_to_node_1 != None {
+        if clock.transfer_queue_to_node_1 != None && clock.time() - last_transfer1 > 64{
             if clock.transfer_queue_to_node_1.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_1.unwrap();
                 clock.transfer_queue_to_node_1 = None;
@@ -380,7 +380,7 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
             }
         }
 
-        if clock.transfer_queue_to_node_2 != None {
+        if clock.transfer_queue_to_node_2 != None && clock.time() - last_transfer2 > 64{
             if clock.transfer_queue_to_node_2.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_2.unwrap();
                 clock.transfer_queue_to_node_2 = None;

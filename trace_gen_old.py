@@ -3,20 +3,9 @@ from sys import argv
 
 def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
-        curr = 0
-        for _ in range(cycles):
-            curr += randint(1, 20)
-            thread = randint(0, 16)
-            if thread > 8:
-                node = 1
-            else:
-                node = 0
-
-            channel = 1
-            
-            #domain, op, cycle, bank, thread
-                        #domain                #op                                #cycle    #bank             #thread  #node #channel
-            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) > 100 else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
+        for cycle in range(cycles):
+            cycle += randint(1, 1000)
+            f.write(f"{randint(0, domains-1)} {'W' if randint(0,1) == 0 else 'R'} {cycle}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
@@ -84,15 +73,12 @@ def gen_trace_with_odds_bank(domains: int, odds_of_write, cycles: int, banks: in
             
 if __name__ == "__main__":
     if len(argv) == 1:
-        # gen_trace(1, 1000, 15,"trace.txt") #default
-        gen_trace_with_odds(8, [30, 30, 30, 30, 30, 30, 30, 30], randint(1100000,1500000), 16,"trace.txt")
+        #gen_trace(4, randint(1000000,5000000), 16,"trace.txt") #default
+        #gen_trace_with_odds(2, [25, 75], randint(1100000,1500000), 16,"trace.txt")
         #gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
-        # gen_trace_with_odds_bank(1, [100], 10000, 16,"trace.txt")
-    elif len(argv) == 4:
+        gen_trace_with_odds_bank(8, [80, 60, 60, 60, 80, 60, 60, 60], 15000000, 16,"trace.txt")
+    elif len(argv) < 4:
         print("Usage: python trace_gen.py <domains> <cycles> <banks> <file_name>")
-        # gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4])
-        gen_trace_with_odds(int(argv[1]), [20, 10], int(argv[2]), int(argv[3]), argv[4])
-        print("Trace generated")
     else:
         gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4])
 
