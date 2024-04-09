@@ -1,22 +1,24 @@
 from random import randint
 from sys import argv
 
-def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
+def gen_trace(domains: int, cycles: int, banks: int, file_name: str, cycle_range: tuple[int, int], threads: int, write_ratio: int, channel_ratio: int):
+    print (f"Generating trace with {domains} domains, {cycles} cycles, {banks} banks, {cycle_range} cycle range, {threads} threads, {write_ratio}% write ratio, {channel_ratio}% channel ratio")
     with open(file_name, 'w') as f:
         curr = 0
         for _ in range(cycles):
-            curr += randint(1, 20)
-            thread = randint(0, 16)
-            if thread > 8:
+            curr += randint(cycle_range[0], cycle_range[1])
+            thread = randint(0, threads)
+            
+            if thread > threads//2:
                 node = 1
             else:
                 node = 0
 
-            channel = randint(0, 1)
+            channel = 0 if randint(0, 100) < channel_ratio else 1
             
             #domain, op, cycle, bank, thread
-                        #domain                #op                                #cycle    #bank             #thread  #node #channel
-            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) > 70 else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
+                        #domain                #op                                            #cycle    #bank            #thread  #node  #channel
+            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) < write_ratio else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
@@ -94,6 +96,7 @@ if __name__ == "__main__":
         gen_trace_with_odds(int(argv[1]), [20, 10], int(argv[2]), int(argv[3]), argv[4])
         print("Trace generated")
     else:
-        gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4])
+            
+        gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4], (int(argv[5]), int(argv[6])), int(argv[7]), int(argv[8]), int(argv[9]))
 
     
