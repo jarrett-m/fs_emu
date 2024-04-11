@@ -44,28 +44,25 @@ impl Domain {
         }
     }
 
-    pub fn copy_write_to_transfer(&mut self, time: u64) {
-        // put all pending writes in the transfer queue that are ready
-        let mut t1: Vec<_> = self.write_queue.iter().filter(|x| x.cylce_in <= time).cloned().collect();
-        // remove duplicates in t1 that are in self.numa1_to_numa2
-        t1.retain(|x| !self.numa1_to_numa2.contains(x));
-        //remove from write queue
-        self.write_queue.retain(|x| !t1.contains(x));
-        // add 16 cycles to the time
-        for mut x in &mut t1 {
-            x.cylce_in = 2 + time;
-        }
-        self.numa1_to_numa2.extend(t1);
-        // again
+    // pub fn copy_write_to_transfer(&mut self, time: u64) {
+    //     // put all pending writes in the transfer queue that are ready
+    //     let mut t1: Vec<_> = self.write_queue.iter().filter(|x| x.cylce_in <= time).cloned().collect();
+    //     // remove duplicates in t1 that are in self.numa1_to_numa2
+    //     t1.retain(|x| !self.numa1_to_numa2.contains(x));
+    //     // add 16 cycles to the time
+    //     for mut x in &mut t1 {
+    //         x.cylce_in = 2 + time;
+    //     }
+    //     self.numa1_to_numa2.extend(t1);
+    //     // again
 
-        let mut t2: Vec<_> = self.write_queue_node2.iter().filter(|x| x.cylce_in <= time).cloned().collect();
-        t2.retain(|x| !self.numa2_to_numa1.contains(x));
-        self.write_queue_node2.retain(|x| !t2.contains(x));
-        for mut x in &mut t2 {
-            x.cylce_in = 2 + time;
-        }
-        self.numa2_to_numa1.extend(t2);
-    }
+    //     let mut t2: Vec<_> = self.write_queue_node2.iter().filter(|x| x.cylce_in <= time).cloned().collect();
+    //     t2.retain(|x| !self.numa2_to_numa1.contains(x));
+    //     for mut x in &mut t2 {
+    //         x.cylce_in = 2 + time;
+    //     }
+    //     self.numa2_to_numa1.extend(t2);
+    // }
 
     pub fn get_next_t_from_numa1(&mut self, time: u64) -> Option<Request> {
         if self.numa1_to_numa2.first().is_some() {
@@ -760,7 +757,8 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+                let mut req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+                self.numa1_to_numa2.push(req);            
             }
         }
         //if only read, send it
@@ -769,7 +767,8 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+            let mut req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
+            self.numa1_to_numa2.push(req);
         }
         else {
             self.fake_requests += 1;
@@ -819,7 +818,8 @@ impl Domain {
             if next_read_with_bank_id.clone().unwrap().cylce_in <= next_write_with_bank_id.clone().unwrap().cylce_in {
                 self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
             } else {
-                self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+                let mut req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+                self.numa2_to_numa1.push(req);
             }
         }
         //if only read, send it
@@ -828,7 +828,8 @@ impl Domain {
         }
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
-            self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+            let mut req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
+            self.numa2_to_numa1.push(req);
         }
         else {
             self.fake_requests += 1;

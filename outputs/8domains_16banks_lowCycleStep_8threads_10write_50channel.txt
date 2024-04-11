@@ -1,230 +1,230 @@
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1464271
-	Domain 0 finished in 1449256 ticks: fake requests: 23974
-	Domain 1 finished in 1464271 ticks: fake requests: 23738
-	Domain 2 finished in 1453846 ticks: fake requests: 24066
-	Domain 3 finished in 1460221 ticks: fake requests: 23402
-	Domain 4 finished in 1461676 ticks: fake requests: 23750
-	Domain 5 finished in 1449571 ticks: fake requests: 23898
-	Domain 6 finished in 1445146 ticks: fake requests: 23606
-	Domain 7 finished in 1457761 ticks: fake requests: 24038
+	Total ticks to finish entire simulation: 12273798
+	Domain 0 finished in 6633976 ticks: fake requests: 383884
+	Domain 1 finished in 6605791 ticks: fake requests: 384304
+	Domain 2 finished in 6637126 ticks: fake requests: 383960
+	Domain 3 finished in 6621301 ticks: fake requests: 383966
+	Domain 4 finished in 6619876 ticks: fake requests: 384020
+	Domain 5 finished in 6629011 ticks: fake requests: 384344
+	Domain 6 finished in 6630346 ticks: fake requests: 384160
+	Domain 7 finished in 6625681 ticks: fake requests: 384374
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1141501
-	Domain 0 finished in 1132936 ticks: fake requests: 13214
-	Domain 1 finished in 1136311 ticks: fake requests: 12978
-	Domain 2 finished in 1128526 ticks: fake requests: 13310
-	Domain 3 finished in 1141501 ticks: fake requests: 12646
-	Domain 4 finished in 1130836 ticks: fake requests: 12990
-	Domain 5 finished in 1128451 ticks: fake requests: 13138
-	Domain 6 finished in 1129786 ticks: fake requests: 12846
-	Domain 7 finished in 1140361 ticks: fake requests: 13278
+	Total ticks to finish entire simulation: 1142896
+	Domain 0 finished in 1142896 ticks: fake requests: 10246
+	Domain 1 finished in 1132471 ticks: fake requests: 10824
+	Domain 2 finished in 1133806 ticks: fake requests: 10480
+	Domain 3 finished in 1138261 ticks: fake requests: 10444
+	Domain 4 finished in 1136356 ticks: fake requests: 10454
+	Domain 5 finished in 1131091 ticks: fake requests: 10894
+	Domain 6 finished in 1137586 ticks: fake requests: 10588
+	Domain 7 finished in 1138561 ticks: fake requests: 10960
 
-Dve+FS:BTA is 1.282759279229716 times faster than BTA
+Dve+FS:BTA is 10.739208116924024 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1461271
-	Domain 0 finished in 1455136 ticks: fake requests: 23582
-	Domain 1 finished in 1461271 ticks: fake requests: 23694
-	Domain 2 finished in 1451086 ticks: fake requests: 23752
-	Domain 3 finished in 1452901 ticks: fake requests: 23918
-	Domain 4 finished in 1447036 ticks: fake requests: 23712
-	Domain 5 finished in 1459291 ticks: fake requests: 23904
-	Domain 6 finished in 1454386 ticks: fake requests: 23426
-	Domain 7 finished in 1456441 ticks: fake requests: 23684
+	Total ticks to finish entire simulation: 12235973
+	Domain 0 finished in 6497896 ticks: fake requests: 382992
+	Domain 1 finished in 6484111 ticks: fake requests: 382656
+	Domain 2 finished in 6486046 ticks: fake requests: 383020
+	Domain 3 finished in 6478141 ticks: fake requests: 382966
+	Domain 4 finished in 6488116 ticks: fake requests: 382826
+	Domain 5 finished in 6491851 ticks: fake requests: 382770
+	Domain 6 finished in 6488146 ticks: fake requests: 382798
+	Domain 7 finished in 6499561 ticks: fake requests: 382896
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1139776
-	Domain 0 finished in 1139776 ticks: fake requests: 12866
-	Domain 1 finished in 1132231 ticks: fake requests: 12974
-	Domain 2 finished in 1129966 ticks: fake requests: 13036
-	Domain 3 finished in 1136461 ticks: fake requests: 13202
-	Domain 4 finished in 1130836 ticks: fake requests: 12996
-	Domain 5 finished in 1133971 ticks: fake requests: 13188
-	Domain 6 finished in 1136866 ticks: fake requests: 12710
-	Domain 7 finished in 1134601 ticks: fake requests: 12968
+	Total ticks to finish entire simulation: 1135051
+	Domain 0 finished in 1131376 ticks: fake requests: 10550
+	Domain 1 finished in 1131631 ticks: fake requests: 10182
+	Domain 2 finished in 1129846 ticks: fake requests: 10574
+	Domain 3 finished in 1130461 ticks: fake requests: 10552
+	Domain 4 finished in 1134076 ticks: fake requests: 10340
+	Domain 5 finished in 1135051 ticks: fake requests: 10236
+	Domain 6 finished in 1129666 ticks: fake requests: 10304
+	Domain 7 finished in 1133761 ticks: fake requests: 10466
 
-Dve+FS:BTA is 1.2820685818967938 times faster than BTA
+Dve+FS:BTA is 10.78010855899867 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1464106
-	Domain 0 finished in 1460176 ticks: fake requests: 23418
-	Domain 1 finished in 1449511 ticks: fake requests: 23882
-	Domain 2 finished in 1457566 ticks: fake requests: 23880
-	Domain 3 finished in 1463101 ticks: fake requests: 23830
-	Domain 4 finished in 1454836 ticks: fake requests: 23762
-	Domain 5 finished in 1449931 ticks: fake requests: 23852
-	Domain 6 finished in 1464106 ticks: fake requests: 23830
-	Domain 7 finished in 1443361 ticks: fake requests: 23974
+	Total ticks to finish entire simulation: 12183613
+	Domain 0 finished in 6475936 ticks: fake requests: 381230
+	Domain 1 finished in 6480031 ticks: fake requests: 381324
+	Domain 2 finished in 6472006 ticks: fake requests: 381142
+	Domain 3 finished in 6478861 ticks: fake requests: 381044
+	Domain 4 finished in 6489556 ticks: fake requests: 380910
+	Domain 5 finished in 6475891 ticks: fake requests: 380844
+	Domain 6 finished in 6467866 ticks: fake requests: 381466
+	Domain 7 finished in 6477841 ticks: fake requests: 381000
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1143556
-	Domain 0 finished in 1135816 ticks: fake requests: 12734
-	Domain 1 finished in 1131511 ticks: fake requests: 13198
-	Domain 2 finished in 1135366 ticks: fake requests: 13196
-	Domain 3 finished in 1136581 ticks: fake requests: 13146
-	Domain 4 finished in 1143556 ticks: fake requests: 13078
-	Domain 5 finished in 1138651 ticks: fake requests: 13164
-	Domain 6 finished in 1139026 ticks: fake requests: 13142
-	Domain 7 finished in 1140001 ticks: fake requests: 13290
+	Total ticks to finish entire simulation: 1143481
+	Domain 0 finished in 1134616 ticks: fake requests: 10850
+	Domain 1 finished in 1131631 ticks: fake requests: 10832
+	Domain 2 finished in 1137886 ticks: fake requests: 10610
+	Domain 3 finished in 1131781 ticks: fake requests: 10558
+	Domain 4 finished in 1142476 ticks: fake requests: 10404
+	Domain 5 finished in 1134211 ticks: fake requests: 10326
+	Domain 6 finished in 1129786 ticks: fake requests: 11058
+	Domain 7 finished in 1143481 ticks: fake requests: 10480
 
-Dve+FS:BTA is 1.2803098405325144 times faster than BTA
+Dve+FS:BTA is 10.654845161397523 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1469536
-	Domain 0 finished in 1469536 ticks: fake requests: 24324
-	Domain 1 finished in 1458391 ticks: fake requests: 24350
-	Domain 2 finished in 1464406 ticks: fake requests: 23892
-	Domain 3 finished in 1467421 ticks: fake requests: 23800
-	Domain 4 finished in 1460356 ticks: fake requests: 23812
-	Domain 5 finished in 1455811 ticks: fake requests: 24076
-	Domain 6 finished in 1460506 ticks: fake requests: 23998
-	Domain 7 finished in 1456441 ticks: fake requests: 23624
+	Total ticks to finish entire simulation: 12233270
+	Domain 0 finished in 6642256 ticks: fake requests: 382968
+	Domain 1 finished in 6653191 ticks: fake requests: 382548
+	Domain 2 finished in 6646486 ticks: fake requests: 382912
+	Domain 3 finished in 6656701 ticks: fake requests: 382758
+	Domain 4 finished in 6639196 ticks: fake requests: 382822
+	Domain 5 finished in 6647731 ticks: fake requests: 382672
+	Domain 6 finished in 6650746 ticks: fake requests: 382608
+	Domain 7 finished in 6641281 ticks: fake requests: 382916
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1143841
-	Domain 0 finished in 1131856 ticks: fake requests: 13464
-	Domain 1 finished in 1132231 ticks: fake requests: 13494
-	Domain 2 finished in 1136446 ticks: fake requests: 13036
-	Domain 3 finished in 1138381 ticks: fake requests: 12944
-	Domain 4 finished in 1142116 ticks: fake requests: 12956
-	Domain 5 finished in 1133611 ticks: fake requests: 13220
-	Domain 6 finished in 1133266 ticks: fake requests: 13142
-	Domain 7 finished in 1143841 ticks: fake requests: 12768
+	Total ticks to finish entire simulation: 1146631
+	Domain 0 finished in 1131376 ticks: fake requests: 10998
+	Domain 1 finished in 1146631 ticks: fake requests: 10386
+	Domain 2 finished in 1132366 ticks: fake requests: 10870
+	Domain 3 finished in 1133221 ticks: fake requests: 10752
+	Domain 4 finished in 1134196 ticks: fake requests: 10756
+	Domain 5 finished in 1132891 ticks: fake requests: 10680
+	Domain 6 finished in 1132906 ticks: fake requests: 10550
+	Domain 7 finished in 1131961 ticks: fake requests: 10898
 
-Dve+FS:BTA is 1.2847380011732399 times faster than BTA
+Dve+FS:BTA is 10.668881270434865 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1478041
-	Domain 0 finished in 1443856 ticks: fake requests: 24708
-	Domain 1 finished in 1453111 ticks: fake requests: 24568
-	Domain 2 finished in 1470166 ticks: fake requests: 24250
-	Domain 3 finished in 1471981 ticks: fake requests: 24026
-	Domain 4 finished in 1463956 ticks: fake requests: 24448
-	Domain 5 finished in 1474891 ticks: fake requests: 23888
-	Domain 6 finished in 1458826 ticks: fake requests: 23930
-	Domain 7 finished in 1478041 ticks: fake requests: 24326
+	Total ticks to finish entire simulation: 12241447
+	Domain 0 finished in 6677896 ticks: fake requests: 383334
+	Domain 1 finished in 6665911 ticks: fake requests: 382824
+	Domain 2 finished in 6675646 ticks: fake requests: 383164
+	Domain 3 finished in 6667141 ticks: fake requests: 383416
+	Domain 4 finished in 6663076 ticks: fake requests: 383096
+	Domain 5 finished in 6672451 ticks: fake requests: 382976
+	Domain 6 finished in 6667546 ticks: fake requests: 382968
+	Domain 7 finished in 6673441 ticks: fake requests: 382606
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1142431
-	Domain 0 finished in 1134256 ticks: fake requests: 13524
-	Domain 1 finished in 1142431 ticks: fake requests: 13384
-	Domain 2 finished in 1141366 ticks: fake requests: 13062
-	Domain 3 finished in 1139341 ticks: fake requests: 12838
-	Domain 4 finished in 1133476 ticks: fake requests: 13260
-	Domain 5 finished in 1133251 ticks: fake requests: 12700
-	Domain 6 finished in 1133266 ticks: fake requests: 12742
-	Domain 7 finished in 1134601 ticks: fake requests: 13138
+	Total ticks to finish entire simulation: 1147711
+	Domain 0 finished in 1130296 ticks: fake requests: 11108
+	Domain 1 finished in 1147711 ticks: fake requests: 10502
+	Domain 2 finished in 1139566 ticks: fake requests: 10890
+	Domain 3 finished in 1127821 ticks: fake requests: 11236
+	Domain 4 finished in 1130236 ticks: fake requests: 10910
+	Domain 5 finished in 1138531 ticks: fake requests: 10644
+	Domain 6 finished in 1132186 ticks: fake requests: 10718
+	Domain 7 finished in 1135921 ticks: fake requests: 10292
 
-Dve+FS:BTA is 1.2937682888507052 times faster than BTA
+Dve+FS:BTA is 10.66596643231615 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1466701
-	Domain 0 finished in 1464856 ticks: fake requests: 23856
-	Domain 1 finished in 1457071 ticks: fake requests: 23908
-	Domain 2 finished in 1445686 ticks: fake requests: 24430
-	Domain 3 finished in 1466701 ticks: fake requests: 23742
-	Domain 4 finished in 1460716 ticks: fake requests: 23804
-	Domain 5 finished in 1459411 ticks: fake requests: 23458
-	Domain 6 finished in 1448266 ticks: fake requests: 23904
-	Domain 7 finished in 1445161 ticks: fake requests: 24018
+	Total ticks to finish entire simulation: 12245000
+	Domain 0 finished in 6605536 ticks: fake requests: 383042
+	Domain 1 finished in 6599551 ticks: fake requests: 383142
+	Domain 2 finished in 6593446 ticks: fake requests: 383506
+	Domain 3 finished in 6615061 ticks: fake requests: 383080
+	Domain 4 finished in 6594916 ticks: fake requests: 383242
+	Domain 5 finished in 6608851 ticks: fake requests: 383224
+	Domain 6 finished in 6595186 ticks: fake requests: 383070
+	Domain 7 finished in 6598801 ticks: fake requests: 383026
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1140691
-	Domain 0 finished in 1130056 ticks: fake requests: 12988
-	Domain 1 finished in 1135591 ticks: fake requests: 13040
-	Domain 2 finished in 1128766 ticks: fake requests: 13562
-	Domain 3 finished in 1127581 ticks: fake requests: 12874
-	Domain 4 finished in 1128436 ticks: fake requests: 12940
-	Domain 5 finished in 1140691 ticks: fake requests: 12594
-	Domain 6 finished in 1131466 ticks: fake requests: 13036
-	Domain 7 finished in 1130521 ticks: fake requests: 13150
+	Total ticks to finish entire simulation: 1145011
+	Domain 0 finished in 1137496 ticks: fake requests: 10546
+	Domain 1 finished in 1133311 ticks: fake requests: 10738
+	Domain 2 finished in 1141726 ticks: fake requests: 10988
+	Domain 3 finished in 1138621 ticks: fake requests: 10650
+	Domain 4 finished in 1131316 ticks: fake requests: 10872
+	Domain 5 finished in 1145011 ticks: fake requests: 10590
+	Domain 6 finished in 1144066 ticks: fake requests: 10550
+	Domain 7 finished in 1132441 ticks: fake requests: 10594
 
-Dve+FS:BTA is 1.2858004490260728 times faster than BTA
+Dve+FS:BTA is 10.694220404869473 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1461541
-	Domain 0 finished in 1460776 ticks: fake requests: 23712
-	Domain 1 finished in 1454431 ticks: fake requests: 23558
-	Domain 2 finished in 1444606 ticks: fake requests: 23908
-	Domain 3 finished in 1461541 ticks: fake requests: 23778
-	Domain 4 finished in 1461076 ticks: fake requests: 23688
-	Domain 5 finished in 1457491 ticks: fake requests: 23630
-	Domain 6 finished in 1451266 ticks: fake requests: 23648
-	Domain 7 finished in 1446961 ticks: fake requests: 23822
+	Total ticks to finish entire simulation: 12189461
+	Domain 0 finished in 6464776 ticks: fake requests: 381204
+	Domain 1 finished in 6467911 ticks: fake requests: 381334
+	Domain 2 finished in 6476446 ticks: fake requests: 381486
+	Domain 3 finished in 6457381 ticks: fake requests: 381544
+	Domain 4 finished in 6466036 ticks: fake requests: 381478
+	Domain 5 finished in 6466531 ticks: fake requests: 381220
+	Domain 6 finished in 6461746 ticks: fake requests: 381160
+	Domain 7 finished in 6473161 ticks: fake requests: 381094
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1140316
-	Domain 0 finished in 1136056 ticks: fake requests: 13004
-	Domain 1 finished in 1137031 ticks: fake requests: 12850
-	Domain 2 finished in 1132006 ticks: fake requests: 13200
-	Domain 3 finished in 1133221 ticks: fake requests: 13070
-	Domain 4 finished in 1140316 ticks: fake requests: 12984
-	Domain 5 finished in 1132171 ticks: fake requests: 12922
-	Domain 6 finished in 1126066 ticks: fake requests: 12940
-	Domain 7 finished in 1128361 ticks: fake requests: 13114
+	Total ticks to finish entire simulation: 1147756
+	Domain 0 finished in 1136536 ticks: fake requests: 10628
+	Domain 1 finished in 1135831 ticks: fake requests: 10774
+	Domain 2 finished in 1138246 ticks: fake requests: 10906
+	Domain 3 finished in 1142341 ticks: fake requests: 10996
+	Domain 4 finished in 1147756 ticks: fake requests: 10914
+	Domain 5 finished in 1139251 ticks: fake requests: 10720
+	Domain 6 finished in 1146946 ticks: fake requests: 10494
+	Domain 7 finished in 1134841 ticks: fake requests: 10548
 
-Dve+FS:BTA is 1.2816982310166656 times faster than BTA
+Dve+FS:BTA is 10.62025465342808 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1468231
-	Domain 0 finished in 1458616 ticks: fake requests: 23866
-	Domain 1 finished in 1468231 ticks: fake requests: 23786
-	Domain 2 finished in 1462606 ticks: fake requests: 23672
-	Domain 3 finished in 1461901 ticks: fake requests: 23858
-	Domain 4 finished in 1435156 ticks: fake requests: 24228
-	Domain 5 finished in 1456771 ticks: fake requests: 24314
-	Domain 6 finished in 1446466 ticks: fake requests: 24066
-	Domain 7 finished in 1454161 ticks: fake requests: 23738
+	Total ticks to finish entire simulation: 12296102
+	Domain 0 finished in 6547456 ticks: fake requests: 384674
+	Domain 1 finished in 6541231 ticks: fake requests: 384884
+	Domain 2 finished in 6523486 ticks: fake requests: 385298
+	Domain 3 finished in 6531901 ticks: fake requests: 384916
+	Domain 4 finished in 6520516 ticks: fake requests: 384658
+	Domain 5 finished in 6527131 ticks: fake requests: 384856
+	Domain 6 finished in 6540106 ticks: fake requests: 384746
+	Domain 7 finished in 6534481 ticks: fake requests: 384928
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1142116
-	Domain 0 finished in 1130776 ticks: fake requests: 12994
-	Domain 1 finished in 1127671 ticks: fake requests: 12914
-	Domain 2 finished in 1129606 ticks: fake requests: 12804
-	Domain 3 finished in 1132501 ticks: fake requests: 12990
-	Domain 4 finished in 1142116 ticks: fake requests: 13360
-	Domain 5 finished in 1133971 ticks: fake requests: 13442
-	Domain 6 finished in 1134706 ticks: fake requests: 13194
-	Domain 7 finished in 1134241 ticks: fake requests: 12866
+	Total ticks to finish entire simulation: 1138876
+	Domain 0 finished in 1130416 ticks: fake requests: 10244
+	Domain 1 finished in 1131631 ticks: fake requests: 10622
+	Domain 2 finished in 1125046 ticks: fake requests: 11050
+	Domain 3 finished in 1131901 ticks: fake requests: 10524
+	Domain 4 finished in 1138876 ticks: fake requests: 10268
+	Domain 5 finished in 1137211 ticks: fake requests: 10396
+	Domain 6 finished in 1125466 ticks: fake requests: 10466
+	Domain 7 finished in 1131241 ticks: fake requests: 10562
 
-Dve+FS:BTA is 1.2855357949630335 times faster than BTA
+Dve+FS:BTA is 10.796699552892502 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1472026
-	Domain 0 finished in 1440976 ticks: fake requests: 24294
-	Domain 1 finished in 1452991 ticks: fake requests: 23860
-	Domain 2 finished in 1470406 ticks: fake requests: 23844
-	Domain 3 finished in 1452301 ticks: fake requests: 24314
-	Domain 4 finished in 1456756 ticks: fake requests: 24164
-	Domain 5 finished in 1453291 ticks: fake requests: 23990
-	Domain 6 finished in 1472026 ticks: fake requests: 23746
-	Domain 7 finished in 1457521 ticks: fake requests: 24328
+	Total ticks to finish entire simulation: 12248213
+	Domain 0 finished in 6612016 ticks: fake requests: 383494
+	Domain 1 finished in 6608911 ticks: fake requests: 383240
+	Domain 2 finished in 6617806 ticks: fake requests: 383040
+	Domain 3 finished in 6622261 ticks: fake requests: 383196
+	Domain 4 finished in 6631636 ticks: fake requests: 383000
+	Domain 5 finished in 6622531 ticks: fake requests: 383240
+	Domain 6 finished in 6608986 ticks: fake requests: 383284
+	Domain 7 finished in 6598081 ticks: fake requests: 383694
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1138516
-	Domain 0 finished in 1131136 ticks: fake requests: 13178
-	Domain 1 finished in 1131511 ticks: fake requests: 12744
-	Domain 2 finished in 1134886 ticks: fake requests: 12728
-	Domain 3 finished in 1129621 ticks: fake requests: 13198
-	Domain 4 finished in 1138516 ticks: fake requests: 13048
-	Domain 5 finished in 1127371 ticks: fake requests: 12870
-	Domain 6 finished in 1134706 ticks: fake requests: 12626
-	Domain 7 finished in 1133161 ticks: fake requests: 13212
+	Total ticks to finish entire simulation: 1143751
+	Domain 0 finished in 1134376 ticks: fake requests: 10932
+	Domain 1 finished in 1143751 ticks: fake requests: 10520
+	Domain 2 finished in 1133926 ticks: fake requests: 10392
+	Domain 3 finished in 1137301 ticks: fake requests: 10564
+	Domain 4 finished in 1139476 ticks: fake requests: 10324
+	Domain 5 finished in 1139011 ticks: fake requests: 10638
+	Domain 6 finished in 1140586 ticks: fake requests: 10632
+	Domain 7 finished in 1137001 ticks: fake requests: 10964
 
-Dve+FS:BTA is 1.2929339596457143 times faster than BTA
+Dve+FS:BTA is 10.708810746394976 times faster than BTA
 BTA Numa Stats:
-	Total ticks to finish entire simulation: 1469536
-	Domain 0 finished in 1469536 ticks: fake requests: 23884
-	Domain 1 finished in 1457791 ticks: fake requests: 24130
-	Domain 2 finished in 1447846 ticks: fake requests: 23966
-	Domain 3 finished in 1456981 ticks: fake requests: 24194
-	Domain 4 finished in 1468276 ticks: fake requests: 23964
-	Domain 5 finished in 1451371 ticks: fake requests: 23728
-	Domain 6 finished in 1460266 ticks: fake requests: 23932
-	Domain 7 finished in 1459681 ticks: fake requests: 24078
+	Total ticks to finish entire simulation: 12293739
+	Domain 0 finished in 6465256 ticks: fake requests: 384756
+	Domain 1 finished in 6471511 ticks: fake requests: 384952
+	Domain 2 finished in 6471166 ticks: fake requests: 384834
+	Domain 3 finished in 6485101 ticks: fake requests: 384630
+	Domain 4 finished in 6475516 ticks: fake requests: 384776
+	Domain 5 finished in 6471931 ticks: fake requests: 384974
+	Domain 6 finished in 6478666 ticks: fake requests: 384814
+	Domain 7 finished in 6473401 ticks: fake requests: 384592
 
 Dve+FS-BTA Stats:
-	Total ticks to finish entire simulation: 1140286
-	Domain 0 finished in 1131136 ticks: fake requests: 12908
-	Domain 1 finished in 1139431 ticks: fake requests: 13158
-	Domain 2 finished in 1140286 ticks: fake requests: 12994
-	Domain 3 finished in 1130341 ticks: fake requests: 13218
-	Domain 4 finished in 1136956 ticks: fake requests: 12988
-	Domain 5 finished in 1137571 ticks: fake requests: 12752
-	Domain 6 finished in 1135186 ticks: fake requests: 12956
-	Domain 7 finished in 1134121 ticks: fake requests: 13102
+	Total ticks to finish entire simulation: 1139281
+	Domain 0 finished in 1138936 ticks: fake requests: 10466
+	Domain 1 finished in 1137391 ticks: fake requests: 10740
+	Domain 2 finished in 1134526 ticks: fake requests: 10628
+	Domain 3 finished in 1136101 ticks: fake requests: 10376
+	Domain 4 finished in 1130476 ticks: fake requests: 10542
+	Domain 5 finished in 1134211 ticks: fake requests: 10782
+	Domain 6 finished in 1136986 ticks: fake requests: 10454
+	Domain 7 finished in 1139281 ticks: fake requests: 10306
 
-Dve+FS:BTA is 1.2887433503524555 times faster than BTA
+Dve+FS:BTA is 10.790787347458616 times faster than BTA

@@ -15,7 +15,6 @@ def gen_trace(domains: int, cycles: int, banks: int, file_name: str, cycle_range
                 node = 1
 
             channel = 0 if randint(0, 100) <= channel_ratio else 1
-            
             #domain, op, cycle, bank, thread
                         #domain                #op                                            #cycle    #bank            #thread  #node  #channel
             f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) < write_ratio else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
