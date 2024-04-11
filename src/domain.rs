@@ -27,6 +27,8 @@ pub struct Domain {
     //stats
     pub fake_requests: u64,
     pub tick_finished: u64,
+    pub data_transfers: u64,
+    
 }
 
 impl Domain {
@@ -37,6 +39,7 @@ impl Domain {
             read_queue: Vec::new(),
             fake_requests: 0,
             tick_finished: 0,
+            data_transfers: 0,
             read_queue_node2: Vec::new(),
             write_queue_node2: Vec::new(),
             numa1_to_numa2: Vec::new(),
@@ -65,42 +68,30 @@ impl Domain {
     // }
 
     pub fn get_next_t_from_numa1(&mut self, time: u64) -> Option<Request> {
-        if self.numa1_to_numa2.first().is_some() {
-            if self.numa1_to_numa2.first().unwrap().cylce_in <= time {
-                let r = self.numa1_to_numa2.remove(0);
-                return Some(r)
-            }
+        if self.numa1_to_numa2.len() == 0 {
+            return None;
         }
-        return None;
+        return Some(self.numa1_to_numa2.remove(0));
     }
 
     pub fn get_next_t_from_numa2(&mut self, time: u64) -> Option<Request> {
-        if self.numa2_to_numa1.first().is_some() {
-            if self.numa2_to_numa1.first().unwrap().cylce_in <= time {
-                let r = self.numa2_to_numa1.remove(0);
-                return Some(r)
-            }
+        if self.numa2_to_numa1.len() == 0 {
+            return None;
         }
-        return None;
+        return Some(self.numa2_to_numa1.remove(0));
     }
 
     pub fn get_next_transfer_request_numa(&mut self, clock: &mut Clock , transfer_to_node: u16) -> Option<Request> {
         let time = clock.time();
         if transfer_to_node == 2{
-            if clock.read_back_from_node_1 > 0 {
-                clock.read_back_from_node_1 -= 1;
-                return None;
-            }
             for (index, req) in self.read_queue.iter().enumerate() {
                 if req.cylce_in <= time {
                     if req.channel == 1 {
                         let mut request = self.read_queue.remove(index);
                         request.cylce_in = time + INIT_REQUEST_NODE_DELAY;
+                        self.data_transfers += INIT_REQUEST_NODE_DELAY;
                         return Some(request);
                     }
-                }
-                else {
-                    break;
                 }
             }
             for (index, req) in self.write_queue.iter().enumerate() {
@@ -108,30 +99,22 @@ impl Domain {
                     if req.channel == 1 {
                         let mut request = self.write_queue.remove(index);
                         request.cylce_in = time + INIT_REQUEST_NODE_DELAY;
+                        self.data_transfers += INIT_REQUEST_NODE_DELAY;
                         return Some(request);
                     }
-                }
-                else {
-                    break;
                 }
             }
             return None;
         }
         if transfer_to_node == 1{
-            if clock.read_back_from_node_2 > 0 {
-                clock.read_back_from_node_2 -= 1;
-                return None;
-            }
             for (index, req) in self.read_queue_node2.iter().enumerate() {
                 if req.cylce_in <= time {
                     if req.channel == 0 {
                         let mut request = self.read_queue_node2.remove(index);
                         request.cylce_in = time + INIT_REQUEST_NODE_DELAY;
+                        self.data_transfers += INIT_REQUEST_NODE_DELAY;
                         return Some(request);
                     }
-                }
-                else {
-                    break;
                 }
             }
             for (index, req) in self.write_queue_node2.iter().enumerate() {
@@ -139,11 +122,9 @@ impl Domain {
                     if req.channel == 0 {
                         let mut request = self.write_queue_node2.remove(index);
                         request.cylce_in = time + INIT_REQUEST_NODE_DELAY;
+                        self.data_transfers += INIT_REQUEST_NODE_DELAY;
                         return Some(request);
                     }
-                }
-                else {
-                    break;
                 }
             }
             return None;
@@ -585,7 +566,7 @@ impl Domain {
             if read.channel != 0 {
                 continue;
             }
-            if read.bank_id % 3 == bank_id_allowed {
+            if read.bank_id % 3 == bank_id_allowed &&  read.cylce_in <= time{
                 next_read_with_bank_id_index = Some(index);
                 break;
             }
@@ -594,13 +575,10 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
-            if write.cylce_in >= time {
-                break;
-            }
             if write.channel != 0 {
                 continue;
             }
-            if write.bank_id % 3 == bank_id_allowed{
+            if write.bank_id % 3 == bank_id_allowed &&  write.cylce_in <= time{
                 next_write_with_bank_id_index = Some(index);
                 break;
             }
@@ -644,13 +622,10 @@ impl Domain {
         //----------------- then again for node 2 --------------------
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue_node2.iter().enumerate() {
-            if read.cylce_in >= time {
-                break;
-            }
             if read.channel != 1 {
                 continue;
             }
-            if read.bank_id % 3 == bank_id_allowed {
+            if read.bank_id % 3 == bank_id_allowed &&  read.cylce_in <= time{
                 next_read_with_bank_id_index = Some(index);
                 break;
             }
@@ -659,13 +634,10 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue_node2.iter().enumerate() {
-            if write.cylce_in >= time {
-                break;
-            }
             if write.channel != 1 {
                 continue;
             }
-            if write.bank_id % 3 == bank_id_allowed {
+            if write.bank_id % 3 == bank_id_allowed &&  write.cylce_in <= time{
                 next_write_with_bank_id_index = Some(index);
                 break;
             }
@@ -715,10 +687,7 @@ impl Domain {
         //get next apprioriate read
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue.iter().enumerate() {
-            if read.cylce_in > time {
-                break;
-            }
-            if read.bank_id % 3 == bank_id_allowed {
+            if read.bank_id % 3 == bank_id_allowed && read.cylce_in <= time {
                 next_read_with_bank_id_index = Some(index);
                 break;
             }
@@ -728,10 +697,7 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue.iter().enumerate() {
-            if write.cylce_in > time {
-                break;
-            }
-            if write.bank_id % 3 == bank_id_allowed {
+            if write.bank_id % 3 == bank_id_allowed &&  write.cylce_in <= time{
                 next_write_with_bank_id_index = Some(index);
                 break;
             }
@@ -758,7 +724,9 @@ impl Domain {
                 self.read_queue.remove(next_read_with_bank_id_index.unwrap());
             } else {
                 let mut req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-                self.numa1_to_numa2.push(req);            
+                if !req.skip{
+                    self.numa1_to_numa2.push(req);
+                }
             }
         }
         //if only read, send it
@@ -768,7 +736,9 @@ impl Domain {
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
             let mut req = self.write_queue.remove(next_write_with_bank_id_index.unwrap());
-            self.numa1_to_numa2.push(req);
+            if !req.skip{
+                self.numa1_to_numa2.push(req);
+            }
         }
         else {
             self.fake_requests += 1;
@@ -777,10 +747,7 @@ impl Domain {
         //----------------- then again for node 2 --------------------
         let mut next_read_with_bank_id_index = None;
         for (index, read) in self.read_queue_node2.iter().enumerate() {
-            if read.cylce_in > time {
-                break;
-            }
-            if read.bank_id % 3 == bank_id_allowed {
+            if read.bank_id % 3 == bank_id_allowed && read.cylce_in <= time  {
                 next_read_with_bank_id_index = Some(index);
                 break;
             }
@@ -789,10 +756,7 @@ impl Domain {
         //get next apprioriate write
         let mut next_write_with_bank_id_index = None;
         for (index, write) in self.write_queue_node2.iter().enumerate() {
-            if write.cylce_in > time {
-                break;
-            }
-            if write.bank_id % 3 == bank_id_allowed {
+            if write.bank_id % 3 == bank_id_allowed && write.cylce_in <= time {
                 next_write_with_bank_id_index = Some(index);
                 break;
             }
@@ -819,7 +783,9 @@ impl Domain {
                 self.read_queue_node2.remove(next_read_with_bank_id_index.unwrap());
             } else {
                 let mut req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-                self.numa2_to_numa1.push(req);
+                if !req.skip{
+                    self.numa2_to_numa1.push(req);
+                }
             }
         }
         //if only read, send it
@@ -829,7 +795,9 @@ impl Domain {
         //if only write, send it 
         else if next_write_with_bank_id.is_some(){
             let mut req = self.write_queue_node2.remove(next_write_with_bank_id_index.unwrap());
-            self.numa2_to_numa1.push(req);
+            if !req.skip{
+                self.numa2_to_numa1.push(req);
+            }
         }
         else {
             self.fake_requests += 1;

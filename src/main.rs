@@ -150,15 +150,19 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
 
         if domain_transfer_timer == 0{
             //transfer requests from node 1 to node 2
-            if clock.transfer_queue_to_node_2 == None {
+            if clock.read_back_from_node_2 != 0 {
+                clock.read_back_from_node_2 -= DATA_RETRIVAL_NODE_DELAY;
+            }         
+            else {
                 clock.transfer_queue_to_node_2 = domains[allowed_domain_for_node_transfer as usize].get_next_transfer_request_numa(&mut clock, 2);
-                // clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_transfer_request_numa(&mut clock, 2);
-
             }
+            
             //transfer requests from node 2 to node 1
-            if clock.transfer_queue_to_node_1 == None {
-                // clock.transfer_queue_to_node_1 = domains[allowed_domain_for_node_transfer as usize].get_next_transfer_request_numa(&mut clock, 1);
-                clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_transfer_request_numa(&mut clock, 1);
+            if clock.read_back_from_node_1 != 0 {
+                clock.read_back_from_node_1 -= DATA_RETRIVAL_NODE_DELAY;
+            }   
+            else {
+                clock.transfer_queue_to_node_1 = domains[allowed_domain_for_node_transfer as usize].get_next_transfer_request_numa(&mut clock, 1);
             }
             domain_transfer_timer = DATA_RETRIVAL_NODE_DELAY;
             allowed_domain_for_node_transfer = (allowed_domain_for_node_transfer + 1) % constraints.num_domains;
@@ -167,35 +171,32 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
             domain_transfer_timer -= 1;
         }
     
-
-        //remove the request from the transfer queue if it is done into the read or write queue
+        //remove the request from the transfer queue
         if clock.transfer_queue_to_node_1 != None {
-            if clock.transfer_queue_to_node_1.clone().unwrap().cylce_in <= clock.time() {
-                let request = clock.transfer_queue_to_node_1.unwrap();
-                clock.transfer_queue_to_node_1 = None;
-                if request.request_type == domain::RequestType::ReadRequest && request.skip == false {
-                    domains[request.domain as usize].read_queue.push(request);
-                    clock.read_back_from_node_1 += DATA_RETRIVAL_NODE_DELAY;
-                }
-                else if request.request_type == domain::RequestType::WriteRequest && request.skip == false {
-                    domains[request.domain  as usize].write_queue.push(request);
-                }
+            let request = clock.transfer_queue_to_node_1.unwrap();
+            clock.transfer_queue_to_node_1 = None;
+            if request.request_type == domain::RequestType::ReadRequest{
+                domains[request.domain as usize].data_transfers += DATA_RETRIVAL_NODE_DELAY;
+                domains[request.domain as usize].read_queue.push(request);
+                clock.read_back_from_node_1 += DATA_RETRIVAL_NODE_DELAY;
+            }
+            else if request.request_type == domain::RequestType::WriteRequest{
+                domains[request.domain  as usize].write_queue.push(request);
             }
         }
     
-
         if clock.transfer_queue_to_node_2 != None {
-            if clock.transfer_queue_to_node_2.clone().unwrap().cylce_in <= clock.time() {
-                let request = clock.transfer_queue_to_node_2.unwrap();
-                clock.transfer_queue_to_node_2 = None;
-                if request.request_type == domain::RequestType::ReadRequest && request.skip == false {
-                    domains[request.domain as usize].read_queue_node2.push(request);
-                    clock.read_back_from_node_2 += DATA_RETRIVAL_NODE_DELAY;
-                }
-                else if request.request_type == domain::RequestType::WriteRequest && request.skip == false{
-                    domains[request.domain as usize].write_queue_node2.push(request);
-                }
+            let request = clock.transfer_queue_to_node_2.unwrap();
+            clock.transfer_queue_to_node_2 = None;
+            if request.request_type == domain::RequestType::ReadRequest{
+                domains[request.domain as usize].data_transfers += DATA_RETRIVAL_NODE_DELAY;
+                domains[request.domain as usize].read_queue_node2.push(request);
+                clock.read_back_from_node_2 += DATA_RETRIVAL_NODE_DELAY;
             }
+            else if request.request_type == domain::RequestType::WriteRequest{
+                domains[request.domain as usize].write_queue_node2.push(request);
+            }
+        
         }
 
         if clock.time() % constraints.dead_time  != 0{
@@ -236,7 +237,7 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
     let mut last_transfer2 = 0;
 
     let mut allowed_domain_for_node_transfer = 0;
-    let mut node_transfer_timer = 0;
+    let mut domain_transfer_timer = 0;
 
     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
         domains.iter().any(|domain| !domain.write_queue.is_empty() || 
@@ -247,45 +248,40 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
         domains.iter().any(|domain| !domain.numa2_to_numa1.is_empty()) ||
         clock.read_back_from_node_1 != 0 || clock.read_back_from_node_2 != 0
         {
-        if node_transfer_timer == 0{   
+        if domain_transfer_timer == 0{   
             //transfer requests from node 1 to node 2
-            if clock.transfer_queue_to_node_2 == None {
-                clock.transfer_queue_to_node_2 = domains[allowed_domain_for_node_transfer as usize].get_next_t_from_numa1(clock.time());
-                // clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_t_from_numa1(clock.time());
-                if clock.transfer_queue_to_node_2 != None {
-                    last_transfer2 = clock.time();
-                }
+            clock.transfer_queue_to_node_2 = domains[allowed_domain_for_node_transfer as usize].get_next_t_from_numa1(clock.time());
+            if clock.transfer_queue_to_node_2 != None {
+                domains[allowed_domain_for_node_transfer as usize].data_transfers += DATA_RETRIVAL_NODE_DELAY;
             }
+            
             //transfer requests from node 2 to node 1
-            if clock.transfer_queue_to_node_1 == None {
-                clock.transfer_queue_to_node_1 = domains[allowed_domain_for_node_transfer as usize].get_next_t_from_numa2(clock.time());
-                // clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_t_from_numa2(clock.time());
-                if clock.transfer_queue_to_node_1 != None {
-                    last_transfer1 = clock.time();
-                }
+            clock.transfer_queue_to_node_1 = domains[allowed_domain_for_node_transfer as usize].get_next_t_from_numa2(clock.time());
+            if clock.transfer_queue_to_node_1 != None {
+                domains[allowed_domain_for_node_transfer as usize].data_transfers += DATA_RETRIVAL_NODE_DELAY;
             }
+            
             allowed_domain_for_node_transfer = (allowed_domain_for_node_transfer + 1) % constraints.num_domains;
-            node_transfer_timer = INIT_REQUEST_NODE_DELAY;
+            domain_transfer_timer = DATA_RETRIVAL_NODE_DELAY;
         }
         else {
-            node_transfer_timer -= 1;
+            domain_transfer_timer -= 1;
         }
         
         //remove the request from the transfer queue if it is done into the read or write queue
-        if clock.transfer_queue_to_node_1 != None && clock.time() - last_transfer1 >= INIT_REQUEST_NODE_DELAY{
-            if clock.transfer_queue_to_node_1.clone().unwrap().cylce_in <= clock.time() {
-                let request = clock.transfer_queue_to_node_1.unwrap();
-                clock.transfer_queue_to_node_1 = None;
-                domains[request.domain as usize].read_queue.push(request);
-            }
+        if clock.transfer_queue_to_node_1 != None {
+            let mut request = clock.transfer_queue_to_node_1.unwrap();
+            //do not propagate the read again
+            request.skip = true;
+            clock.transfer_queue_to_node_1 = None;
+            domains[request.domain as usize].write_queue.push(request);
         }
 
-        if clock.transfer_queue_to_node_2 != None && clock.time() - last_transfer2 >= INIT_REQUEST_NODE_DELAY{
-            if clock.transfer_queue_to_node_2.clone().unwrap().cylce_in <= clock.time() {
-                let request = clock.transfer_queue_to_node_2.unwrap();
-                clock.transfer_queue_to_node_2 = None;
-                domains[request.domain as usize].read_queue_node2.push(request);
-            }
+        if clock.transfer_queue_to_node_2 != None{
+            let mut request = clock.transfer_queue_to_node_2.unwrap();
+            request.skip = true;
+            clock.transfer_queue_to_node_2 = None;
+            domains[request.domain as usize].write_queue_node2.push(request);
         }
 
         if clock.time() % constraints.dead_time  != 0{
@@ -399,6 +395,11 @@ fn main() {
     }
     
     println!("\nDve+FS:BTA is {} times faster than BTA", bta_data.0 as f64 / bta_dve_data.0 as f64);
+
+    println!("Data Transfers Dve: {}", bta_dve_data.1.iter().fold(0, |acc, domain| acc + domain.data_transfers));
+
+    println!("Data Transfers Norm: {}", bta_data.1.iter().fold(0, |acc, domain | acc + domain.data_transfers));
+
 
     // println!("\nFS Mirroring Channels Stats:");
     // println!("\tTotal ticks to finish entire simulation: {}", bta_channel_mirror_data.0);
