@@ -3,9 +3,12 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::thread;
+use crate::domain::INIT_REQUEST_NODE_DELAY;
+use crate::domain::DATA_RETRIVAL_NODE_DELAY;
 
 mod clock;
 mod domain;
+
 
 fn simulate_fs_rankp(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>) {
     let mut clock = clock::Clock::new();
@@ -25,149 +28,6 @@ fn simulate_fs_rankp(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Dom
     }
     (clock.time(), domains.clone())
 }
-
-// fn simulate_fs_bankp_reorg_noprofile(domains: &mut Vec<domain::Domain>) -> u64 {
-//     let mut clock = clock::Clock::new();
-//     let constraints = clock::Constraints::new(domains.len() as u16, 6);
-
-//     let mut write: bool = true;
-//     while domains.iter().any(|domain| !domain.read_queue.is_empty()) ||  domains.iter().any(|domain| !domain.write_queue.is_empty()) {
-//         //check which request (next read or write) was sent first, and send it
-//         for i in 0..constraints.num_domains {
-//             if write{
-//                     domains[i as usize].send_next_write_request(clock.time());
-//                     clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//                 }
-//             else {
-//                 domains[i as usize].send_next_read_request(clock.time());
-//                 clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//             }   
-//         }
-//         for current_domain in 0..constraints.num_domains {
-//             if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
-//                 domains[current_domain as usize].tick_finished = clock.time();
-//             }
-//         }
-
-//         write = !write;
-//         clock.tick_by(9); //skip to next dead time
-//     }
-
-//     //println!("{} total system ticks to complete", clock.time());
-//     clock.time()
-// }
-
-// fn simulate_fs_bankp_reorg_profile(domains: &mut Vec<domain::Domain>) -> u64 {
-//     let mut clock = clock::Clock::new();
-//     let constraints = clock::Constraints::new(domains.len() as u16, 6);
-    
-//     let mut write: bool = true;
-//     while domains.iter().any(|domain| !domain.read_queue.is_empty()) ||  domains.iter().any(|domain| !domain.write_queue.is_empty()) {
-//         //check which request (next read or write) was sent first, and send it
-//         for i in 0..constraints.num_domains {
-//             if write{
-//                 if domains[i as usize].can_write() {
-//                     domains[i as usize].send_next_write_request(clock.time());
-//                     clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//                 }
-//             }
-//             else if domains[i as usize].can_read() {
-//                 domains[i as usize].send_next_read_request(clock.time());
-//                 clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//             }
-//         }
-
-//         for current_domain in 0..constraints.num_domains {
-//             if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
-//                 domains[current_domain as usize].tick_finished = clock.time();
-//             }
-//         }
-//         write = !write;
-//         clock.tick_by(9); //skip to next dead time
-//     }
-//     //println!("{} total system ticks to complete", clock.time());
-//     clock.time()
-// }
-
-// fn simulate_fs_nop(domains: &mut Vec<domain::Domain>) -> u64{
-//     let mut clock = clock::Clock::new();
-//     let constraints = clock::Constraints::new(domains.len() as u16, 43);
-//     let mut current_domain: u16 = 0;
-//     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
-//         //check which request (next read or write) was sent first, and send it
-//         domains[current_domain as usize].send_next_request(clock.time());
-//         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-
-//         if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
-//             domains[current_domain as usize].tick_finished = clock.time();
-//         }
-
-//         current_domain = (current_domain + 1) % constraints.num_domains;
-//     }
-
-//     println!("{} total system ticks to complete", clock.time());
-//     // for domain in domains.iter() {
-//     //     println!("Domain {} finished in {} ticks", domain.id, domain.tick_finished);
-//     // }
-//     clock.time()
-// }
-
-// fn simulate_fs_bankp(domains: &mut Vec<domain::Domain>) -> u64 {
-//     let mut clock = clock::Clock::new();
-//     let constraints = clock::Constraints::new(domains.len() as u16, 15);
-//     let mut current_domain: u16 = 0;
-//     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
-//         //check which request (next read or write) was sent first, and send it
-//         domains[current_domain as usize].send_next_request(clock.time());
-//         clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-
-//         if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
-//             domains[current_domain as usize].tick_finished = clock.time();
-//         }
-
-//         current_domain = (current_domain + 1) % constraints.num_domains;
-//     }
-
-//     println!("FS_BANKP: {} total system ticks", clock.time());
-//     clock.time()
-    
-// }
-
-// fn simulate_fs_bta_wrprofile(domains: &mut Vec<domain::Domain>) -> u64 {
-//     let mut clock = clock::Clock::new();
-//     let constraints = clock::Constraints::new(domains.len() as u16, 6);
-
-//     let mut current_bank_id: u16 = 0;
-//     let mut write: bool = true;
-
-//     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || domains.iter().any(|domain| !domain.write_queue.is_empty()) {
-//         for i in 0..constraints.num_domains {
-//             if write{
-//                 if domains[i as usize].can_write() {
-//                     domains[i as usize].send_next_write_request_bta(clock.time(), current_bank_id);
-//                     clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//                 }
-//             }
-//             else if domains[i as usize].can_read() {
-//                 domains[i as usize].send_next_read_request_bta(clock.time(), current_bank_id);
-//                 clock.tick_by(constraints.dead_time as u64); //skip to next dead time
-//             }
-
-//             current_bank_id = (current_bank_id + 1) % 3;
-//             domains[i as usize].pointer = (domains[i as usize].pointer + 1) % domains[i as usize].write_tracker.len(); //move to next read or write
-//         }
-
-//         for current_domain in 0..constraints.num_domains {
-//             if domains[current_domain as usize].read_queue.is_empty() && domains[current_domain as usize].write_queue.is_empty()  && domains[current_domain as usize].tick_finished == 0{
-//                 domains[current_domain as usize].tick_finished = clock.time();
-//             }
-//         }
-//         write = !write;
-//         clock.tick_by(9); //skip to next dead time
-//     }
-//     println!("FS_BTP: {} ticks to complete with ", clock.time());
-//     clock.time()
-// }
 
 fn simulate_fs_bta(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::Domain>){
     let mut clock = clock::Clock::new();
@@ -279,28 +139,32 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
         domains.iter().any(|domain| !domain.write_queue.is_empty() || 
         domains.iter().any(|domain| !domain.write_queue_node2.is_empty()) ||
         domains.iter().any(|domain| !domain.read_queue_node2.is_empty())) ||
-        clock.transfer_queue_to_node_1 != None || clock.transfer_queue_to_node_2 != None{
-            // println!("Time: {}", clock.time());
+        clock.transfer_queue_to_node_1.clone() != None || clock.transfer_queue_to_node_2.clone() != None || 
+        domains.iter().any(|domain| !domain.numa1_to_numa2.is_empty()) ||
+        domains.iter().any(|domain| !domain.numa2_to_numa1.is_empty()) ||
+        clock.read_back_from_node_1 != 0 || clock.read_back_from_node_2 != 0
+        {
+
         //transfer requests from node 1 to node 2
         if clock.transfer_queue_to_node_2 == None {
-            clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_transfer_request_numa(clock.time(), 2);
+            clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_transfer_request_numa(&mut clock, 2);
         }
         //transfer requests from node 2 to node 1
         if clock.transfer_queue_to_node_1 == None {
-            clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_transfer_request_numa(clock.time(), 1);
+            clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_transfer_request_numa(&mut clock, 1);
         }
 
         //remove the request from the transfer queue if it is done into the read or write queue
-
         if clock.transfer_queue_to_node_1 != None {
             if clock.transfer_queue_to_node_1.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_1.unwrap();
                 clock.transfer_queue_to_node_1 = None;
-                if request.request_type == domain::RequestType::ReadRequest {
-                    domains[current_domain as usize].read_queue.push(request);
+                if request.request_type == domain::RequestType::ReadRequest && request.skip == false {
+                    domains[request.domain as usize].read_queue.push(request);
+                    clock.read_back_from_node_1 += DATA_RETRIVAL_NODE_DELAY;
                 }
-                else {
-                    domains[current_domain as usize].write_queue.push(request);
+                else if request.request_type == domain::RequestType::WriteRequest && request.skip == false {
+                    domains[request.domain  as usize].write_queue.push(request);
                 }
             }
         }
@@ -310,18 +174,23 @@ fn simulate_fs_base_numa(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain:
             if clock.transfer_queue_to_node_2.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_2.unwrap();
                 clock.transfer_queue_to_node_2 = None;
-                if request.request_type == domain::RequestType::ReadRequest {
-                    domains[current_domain as usize].read_queue_node2.push(request);
+                if request.request_type == domain::RequestType::ReadRequest && request.skip == false {
+                    domains[request.domain as usize].read_queue_node2.push(request);
+                    clock.read_back_from_node_2 += DATA_RETRIVAL_NODE_DELAY;
                 }
-                else {
-                    domains[current_domain as usize].write_queue_node2.push(request);
+                else if request.request_type == domain::RequestType::WriteRequest && request.skip == false{
+                    domains[request.domain as usize].write_queue_node2.push(request);
                 }
             }
         }
 
+        if clock.time() % constraints.dead_time  != 0{
+            clock.tick_by(1);
+            continue;
+        }
         //Send the next request with allowed bank
         domains[current_domain as usize].send_next_request_bank_numa(clock.time(), current_bank_id);
-        clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+        clock.tick_by(1); //skip to next dead time
 
         //if there are no more request, set the program finish time
         if  domains[current_domain as usize].read_queue.is_empty() && 
@@ -348,6 +217,7 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
     for domain in domains.iter_mut() {
         domain.split_threads_evenly();
     }
+
     let mut last_transfer1 = 0;
     let mut last_transfer2 = 0;
     while domains.iter().any(|domain| !domain.read_queue.is_empty()) || 
@@ -356,41 +226,50 @@ fn simulate_fs_bta_dve(domains: &mut Vec<domain::Domain>) -> (u64, Vec<domain::D
         domains.iter().any(|domain| !domain.read_queue_node2.is_empty()))||
         clock.transfer_queue_to_node_1 != None || clock.transfer_queue_to_node_2 != None ||
         domains.iter().any(|domain| !domain.numa1_to_numa2.is_empty()) ||
-        domains.iter().any(|domain| !domain.numa2_to_numa1.is_empty())
+        domains.iter().any(|domain| !domain.numa2_to_numa1.is_empty()) ||
+        clock.read_back_from_node_1 != 0 || clock.read_back_from_node_2 != 0
         {
         
         domains[current_domain as usize].copy_write_to_transfer(clock.time());
 
         if clock.transfer_queue_to_node_2 == None {
             clock.transfer_queue_to_node_2 = domains[current_domain as usize].get_next_t_from_numa1(clock.time());
-            last_transfer2 = clock.time();
+            if clock.transfer_queue_to_node_2 != None {
+                last_transfer2 = clock.time();
+            }
         }
         //transfer requests from node 2 to node 1
         if clock.transfer_queue_to_node_1 == None {
             clock.transfer_queue_to_node_1 = domains[current_domain as usize].get_next_t_from_numa2(clock.time());
-            last_transfer1 = clock.time();
+            if clock.transfer_queue_to_node_1 != None {
+                last_transfer1 = clock.time();
+            }
         }
 
         //remove the request from the transfer queue if it is done into the read or write queue
-        if clock.transfer_queue_to_node_1 != None && clock.time() - last_transfer1 > 64{
+        if clock.transfer_queue_to_node_1 != None && clock.time() - last_transfer1 >= INIT_REQUEST_NODE_DELAY{
             if clock.transfer_queue_to_node_1.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_1.unwrap();
                 clock.transfer_queue_to_node_1 = None;
-                domains[current_domain as usize].read_queue.push(request);
+                domains[request.domain as usize].read_queue.push(request);
             }
         }
 
-        if clock.transfer_queue_to_node_2 != None && clock.time() - last_transfer2 > 64{
+        if clock.transfer_queue_to_node_2 != None && clock.time() - last_transfer2 >= INIT_REQUEST_NODE_DELAY{
             if clock.transfer_queue_to_node_2.clone().unwrap().cylce_in <= clock.time() {
                 let request = clock.transfer_queue_to_node_2.unwrap();
                 clock.transfer_queue_to_node_2 = None;
-                domains[current_domain as usize].read_queue_node2.push(request);
+                domains[request.domain as usize].read_queue_node2.push(request);
             }
         }
 
-        //Send the next request with allowed bank
+        if clock.time() % constraints.dead_time  != 0{
+            clock.tick_by(1);
+            continue;
+        }
+        //Send the next 
         domains[current_domain as usize].send_next_request_bank_dve(clock.time(), current_bank_id);
-        clock.tick_by(constraints.dead_time as u64); //skip to next dead time
+        clock.tick_by(1);
 
         //if there are no more request, set the program finish time
         if  domains[current_domain as usize].read_queue.is_empty() && 

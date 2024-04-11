@@ -4,14 +4,22 @@ pub struct Clock {
     time: u64,
     pub transfer_queue_to_node_1: Option<Request>,
     pub transfer_queue_to_node_2: Option<Request>,
+
+    //data transfer back
+    pub read_back_from_node_1: u64,
+    pub read_back_from_node_2: u64,
+
+
 }
 
 impl Clock {
     pub fn new() -> Self {
         Clock { 
-            time: 0,
+            time: 1,
             transfer_queue_to_node_1: None,
             transfer_queue_to_node_2: None,
+            read_back_from_node_1: 0,
+            read_back_from_node_2: 0,
         }
     }
 
@@ -25,17 +33,15 @@ impl Clock {
 }
 
 pub struct Constraints {
-    pub inject_time: u16,   // time between a vm's current request and the next request
     pub num_domains: u16,   // number of domains
-    pub dead_time: u16,     // time between a vm's current request and the next request
+    pub dead_time: u64,     // time between a vm's current request and the next request
 }
 
 impl Constraints {
-    pub fn new(num_domains: u16, dead_time: u16) -> Self {
+    pub fn new(num_domains: u16, dead_time: u64) -> Self {
         Constraints {
             num_domains,
             dead_time,
-            inject_time: dead_time * num_domains
         }
     }
 }

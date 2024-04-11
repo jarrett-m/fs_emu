@@ -1,4 +1,4 @@
-#!/bin/bash
+# #!/bin/bash
 
 for i in {1..10}; do
     # Generate the trace file
@@ -46,4 +46,14 @@ for i in {1..10}; do
     # Run the Rust program 10 times and output the result to a file
 
     cargo run >> outputs/8domains_16banks_lowCycleStep_8threads_30write_80channel.txt
+done
+
+for i in {1..10}; do
+    # Generate the trace file
+    #                    domains: int, cycles: int, banks: int, file_name: str,   cycle_range: tuple[int, int], threads: int, write_ratio: int, channel_ratio: int
+    python3 trace_gen.py 8             100000        16          traces/trace.txt 1 20                          1            30                100
+
+    # Run the Rust program 10 times and output the result to a file
+
+    cargo run >> outputs/8domains_16banks_lowCycleStep_1threads_30write_100channel.txt
 done

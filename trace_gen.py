@@ -7,14 +7,14 @@ def gen_trace(domains: int, cycles: int, banks: int, file_name: str, cycle_range
         curr = 0
         for _ in range(cycles):
             curr += randint(cycle_range[0], cycle_range[1])
-            thread = randint(0, threads)
+            thread = randint(0, threads-1)
             
             if thread > threads//2:
-                node = 1
+                node = 2
             else:
-                node = 0
+                node = 1
 
-            channel = 0 if randint(0, 100) < channel_ratio else 1
+            channel = 0 if randint(0, 100) <= channel_ratio else 1
             
             #domain, op, cycle, bank, thread
                         #domain                #op                                            #cycle    #bank            #thread  #node  #channel
