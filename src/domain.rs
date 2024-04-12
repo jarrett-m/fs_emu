@@ -4,6 +4,8 @@
 // Read carries 64 BYTES of data back (Data Retrival)
 use crate::clock::Clock as Clock;
 
+// pub const INIT_REQUEST_NODE_DELAY: u64 = 2/2;
+// pub const DATA_RETRIVAL_NODE_DELAY: u64 = 16/2;
 pub const INIT_REQUEST_NODE_DELAY: u64 = 2;
 pub const DATA_RETRIVAL_NODE_DELAY: u64 = 16;
 
