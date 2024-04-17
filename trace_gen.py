@@ -1,11 +1,23 @@
 from random import randint
 from sys import argv
 
-def gen_trace(domains: int, cycles: int, banks: int, file_name: str):
+def gen_trace(domains: int, cycles: int, banks: int, file_name: str, cycle_range: tuple[int, int], threads: int, write_ratio: int, channel_ratio: int):
+    print (f"Generating trace with {domains} domains, {cycles} cycles, {banks} banks, {cycle_range} cycle range, {threads} threads, {write_ratio}% write ratio, {channel_ratio}% channel ratio")
     with open(file_name, 'w') as f:
-        for cycle in range(cycles):
-            cycle += randint(1, 1000)
-            f.write(f"{randint(0, domains-1)} {'W' if randint(0,1) == 0 else 'R'} {cycle}\n")
+        curr = 0
+        for _ in range(cycles):
+            curr += randint(cycle_range[0], cycle_range[1])
+            thread = randint(0, threads-1)
+            
+            if thread > threads//2:
+                node = 2
+            else:
+                node = 1
+
+            channel = 0 if randint(0, 100) <= channel_ratio else 1
+            #domain, op, cycle, bank, thread
+                        #domain                #op                                            #cycle    #bank            #thread  #node  #channel
+            f.write(f"{randint(0, domains-1)} {'W' if randint(0, 100) < write_ratio else 'R'} {curr} {randint(0,banks)} {thread} {node} {channel}\n")
 
 def gen_no_rand_trace (domains: int, cycles: int, banks: int, file_name: str):
     with open(file_name, 'w') as f:
@@ -73,13 +85,17 @@ def gen_trace_with_odds_bank(domains: int, odds_of_write, cycles: int, banks: in
             
 if __name__ == "__main__":
     if len(argv) == 1:
-        #gen_trace(4, randint(1000000,5000000), 16,"trace.txt") #default
-        #gen_trace_with_odds(2, [25, 75], randint(1100000,1500000), 16,"trace.txt")
+        # gen_trace(1, 1000, 15,"trace.txt") #default
+        gen_trace_with_odds(8, [30, 30, 30, 30, 30, 30, 30, 30], randint(1100000,1500000), 16,"trace.txt")
         #gen_trace_with_odds_bank(8, [25,25,75,50,50,50,70,90], 1500000, 16,"trace.txt")
-        gen_trace_with_odds_bank(8, [80, 60, 60, 60, 80, 60, 60, 60], 15000000, 16,"trace.txt")
-    elif len(argv) < 4:
+        # gen_trace_with_odds_bank(1, [100], 10000, 16,"trace.txt")
+    elif len(argv) == 4:
         print("Usage: python trace_gen.py <domains> <cycles> <banks> <file_name>")
+        # gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4])
+        gen_trace_with_odds(int(argv[1]), [20, 10], int(argv[2]), int(argv[3]), argv[4])
+        print("Trace generated")
     else:
-        gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4])
+            
+        gen_trace(int(argv[1]), int(argv[2]), int(argv[3]), argv[4], (int(argv[5]), int(argv[6])), int(argv[7]), int(argv[8]), int(argv[9]))
 
     
